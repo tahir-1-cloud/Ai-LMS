@@ -216,9 +216,11 @@ namespace StudyApp.API.Controllers
         [HttpGet("{attemptId}")]
         public async Task<IActionResult> GetAttempt(int attemptId)
         {
-            long studentId = long.Parse(User.FindFirst("id")?.Value ?? "0");
-            var attempt = await _service.GetAttemptAsync(attemptId);
-            //var attempt = await _service.GetAttemptAsync(attemptId, studentId);
+            long studentId = long.Parse(
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? throw new UnauthorizedAccessException("User id not found in token")
+            );
+            var attempt = await _service.GetAttemptAsync(attemptId, studentId);
             if (attempt == null) return NotFound();
             return Ok(attempt);
         }

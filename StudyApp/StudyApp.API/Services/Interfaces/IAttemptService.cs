@@ -6,7 +6,7 @@ namespace StudyApp.API.Services.Interfaces
     public interface IAttemptService
     {
         //Task<AttemptDto?> GetAttemptAsync(int attemptId, long studentId);
-        Task<AttemptDto?> GetAttemptAsync(int attemptId);
+        Task<AttemptDto?> GetAttemptAsync(int attemptId, long studentId);
         Task SaveAnswerAsync(SaveAnswerDto model, long studentId);
         Task CompleteAttemptAsync(CompleteAttemptDto model, long studentId);
         Task<bool> TryJoinAttemptAsync(int attemptId, long studentId, string connectionId);

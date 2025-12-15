@@ -16,6 +16,7 @@ export interface AttemptDto {
   studentId: number;
   attemptedOn: string;      // ISO string from API
   startedAt?: string | null;
+  endsAt?: string | null;
   completedAt?: string | null;
   status: 'InProgress' | 'Completed' | string;
   score: number;

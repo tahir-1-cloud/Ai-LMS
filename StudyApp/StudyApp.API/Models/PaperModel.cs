@@ -77,6 +77,7 @@ namespace StudyApp.API.Models
         public DateTime AttemptedOn { get; set; }
         public DateTime? StartedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
+        public DateTime? EndsAt { get; set; }
         public string Status { get; set; } = "NotStarted";
         public decimal Score { get; set; }
         public int DurationMinutes { get; set; }

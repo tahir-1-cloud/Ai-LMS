@@ -8,7 +8,7 @@ namespace StudyApp.API.Domain.Interfaces
     {
         Task<StudentAttempt?> GetByIdAsync(int attemptId);
         //Task<AttemptDto?> GetAttemptDtoForStudentAsync(int attemptId, long studentId);
-        Task<AttemptDto?> GetAttemptDtoForStudentAsync(int attemptId);
+        Task<AttemptDto?> GetAttemptDtoForStudentAsync(int attemptId, long studentId);
         Task<List<QuestionForAttemptDto>> GetQuestionsForAttemptAsync(int attemptId);
         Task SaveAnswerAsync(StudentAnswer answer);
         Task<List<StudentAnswer>> GetAnswersForAttemptAsync(int attemptId);

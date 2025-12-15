@@ -73,10 +73,13 @@ namespace StudyApp.API.Repositories
 
         //    return dto;
         //}
-        public async Task<AttemptDto?> GetAttemptDtoForStudentAsync(int attemptId)
+        public async Task<AttemptDto?> GetAttemptDtoForStudentAsync(int attemptId, long studentId)
         {
             var attempt = await _context.StudentAttempts
-                .FirstOrDefaultAsync(a => a.Id == attemptId && !a.IsDeleted);
+                .FirstOrDefaultAsync(a =>
+                    a.Id == attemptId &&
+                    a.StudentId == studentId &&
+                    !a.IsDeleted);
 
             if (attempt == null)
                 return null;
@@ -87,17 +90,33 @@ namespace StudyApp.API.Repositories
                     .ThenInclude(q => q.Options.Where(o => !o.IsDeleted))
                 .FirstOrDefaultAsync();
 
+            // Convert start time to Pakistan Time
+            DateTime? startedAtPkt = attempt.StartedAt.HasValue
+                ? ToPakistanTime(attempt.StartedAt.Value)
+                : null;
+
+            int durationMinutes = paper?.DurationMinutes ?? 60;
+
+            DateTime? endsAtPkt = startedAtPkt.HasValue
+                ? startedAtPkt.Value.AddMinutes(durationMinutes)
+                : null;
+
             var dto = new AttemptDto
             {
                 Id = attempt.Id,
                 PaperId = attempt.PaperId,
                 StudentId = attempt.StudentId,
-                AttemptedOn = attempt.AttemptedOn,
-                StartedAt = attempt.StartedAt,
-                CompletedAt = attempt.CompletedAt,
+
+                AttemptedOn = ToPakistanTime(attempt.AttemptedOn),
+                StartedAt = startedAtPkt,
+                CompletedAt = attempt.CompletedAt.HasValue
+                    ? ToPakistanTime(attempt.CompletedAt.Value)
+                    : null,
+
+                EndsAt = endsAtPkt,
                 Status = attempt.Status ?? "NotStarted",
                 Score = attempt.Score,
-                DurationMinutes = paper != null ? (paper.DurationMinutes) : 60,
+                DurationMinutes = durationMinutes,
                 Questions = new List<QuestionForAttemptDto>()
             };
 
@@ -105,24 +124,32 @@ namespace StudyApp.API.Repositories
             {
                 foreach (var q in paper.Questions.OrderBy(q => q.Order))
                 {
-                    var qDto = new QuestionForAttemptDto
+                    dto.Questions.Add(new QuestionForAttemptDto
                     {
                         QuestionId = q.Id,
                         Title = q.Title ?? string.Empty,
-                        Options = q.Options?.Select(o => new AttemptOptionDto
-                        {
-                            Id = o.Id,
-                            OptionText = o.OptionText ?? string.Empty
-                        }).ToList() ?? new List<AttemptOptionDto>()
-                    };
-
-                    dto.Questions.Add(qDto);
+                        Options = q.Options?
+                            .Select(o => new AttemptOptionDto
+                            {
+                                Id = o.Id,
+                                OptionText = o.OptionText ?? string.Empty
+                            })
+                            .ToList()
+                            ?? new List<AttemptOptionDto>()
+                    });
                 }
             }
 
-
             return dto;
         }
+
+
+        private static DateTime ToPakistanTime(DateTime dt)
+        {
+            var pkt = TimeZoneInfo.FindSystemTimeZoneById("Pakistan Standard Time");
+            return TimeZoneInfo.ConvertTime(dt, pkt);
+        }
+
         public async Task<List<QuestionForAttemptDto>> GetQuestionsForAttemptAsync(int attemptId)
         {
             var attempt = await _context.StudentAttempts.FirstOrDefaultAsync(a => a.Id == attemptId && !a.IsDeleted);

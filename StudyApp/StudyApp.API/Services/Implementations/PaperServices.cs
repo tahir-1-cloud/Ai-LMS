@@ -156,31 +156,17 @@ namespace StudyApp.API.Services.Implementations
             if (!isAssigned)
                 throw new Exception("Paper is not assigned to any session.");
 
-            /* ================= TIME HANDLING (PK TIME ONLY) ================= */
-
-            // Treat DB time as LOCAL (Pakistan)
             var testStartLocal = DateTime.SpecifyKind(
                 paper.TestConductedOn,
                 DateTimeKind.Local
             );
-
             var nowLocal = DateTime.Now;
-
-            // Debug logs (keep temporarily)
-            Console.WriteLine($"Test start (PK): {testStartLocal:yyyy-MM-dd HH:mm:ss}");
-            Console.WriteLine($"Now (PK): {nowLocal:yyyy-MM-dd HH:mm:ss}");
-
-            /* ================= START WINDOW CHECK ================= */
-
             if (nowLocal < testStartLocal)
                 throw new Exception("This test has not started yet.");
 
             var examEndLocal = testStartLocal.AddMinutes(paper.DurationMinutes);
-
             if (nowLocal > examEndLocal)
                 throw new Exception("This test has already ended.");
-
-            /* ================= ATTEMPT CHECKS ================= */
 
             var existingInProgress = await _papersRepository
                 .GetInProgressAttempt(model.PaperId, model.StudentId);
@@ -198,8 +184,6 @@ namespace StudyApp.API.Services.Implementations
 
             if (completedAttempt != null)
                 throw new Exception("You have already completed this test.");
-
-            /* ================= CREATE ATTEMPT ================= */
 
             var newAttempt = new StudentAttempt
             {

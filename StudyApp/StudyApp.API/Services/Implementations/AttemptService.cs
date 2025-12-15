@@ -27,9 +27,9 @@ namespace StudyApp.API.Services.Implementations
         //{
         //    return await _repo.GetAttemptDtoForStudentAsync(attemptId, studentId);
         //}
-        public async Task<AttemptDto?> GetAttemptAsync(int attemptId)
+        public async Task<AttemptDto?> GetAttemptAsync(int attemptId, long studentId)
         {
-            return await _repo.GetAttemptDtoForStudentAsync(attemptId);
+            return await _repo.GetAttemptDtoForStudentAsync(attemptId,studentId);
         }
 
         public async Task SaveAnswerAsync(SaveAnswerDto model, long studentId)

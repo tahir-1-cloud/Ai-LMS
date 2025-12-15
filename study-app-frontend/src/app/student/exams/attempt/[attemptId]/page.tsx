@@ -66,89 +66,88 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
   const lockedAfterIndexRef = useRef<number | null>(null); // once set, cannot go back to indices <= this
   const initialMoveDoneRef = useRef<boolean>(false);
 
-  // duration ref (persisted for timer guards)
-  const durationRef = useRef<number>(0);
 
   // helper: try to parse server date, assume UTC if no timezone provided
-  const parseServerDate = (s: string | undefined | null): Date | null => {
-    if (!s) return null;
-    if (/[zZ]|[+\-]\d{2}:\d{2}$/.test(s)) {
-      return new Date(s);
-    }
+const parseServerDate = (s: string | undefined | null): Date | null => {
+  if (!s) return null;
+
+  // ✅ trust backend value as-is (local time)
+  return new Date(s);
+};
+
+
+  // ---------- Load attempt ----------
+useEffect(() => {
+  if (Number.isNaN(attemptId)) return;
+  let mounted = true;
+
+  const load = async () => {
+    setLoading(true);
     try {
-      // assume server sent UTC if no zone part
-      return new Date(s + 'Z');
-    } catch {
-      return new Date(s);
+      const data = await getAttempt(attemptId);
+      if (!mounted) return;
+      console.log('[ATTEMPT] loaded', data);
+
+      // store attempt object returned by server into state
+      setAttempt(data);
+      setQuestions(data.questions || []);
+
+      // build answers map if server returned savedAnswers
+      if (data.savedAnswers && Array.isArray(data.savedAnswers)) {
+        const map: Record<number, any> = {};
+        for (const sa of data.savedAnswers) {
+          map[sa.questionId] = {
+            selectedOptionId: sa.selectedOptionId ?? undefined,
+            marked: !!sa.isMarkedForReview,
+          };
+        }
+        setAnswers(map);
+      }
+
+      // determine if started (still useful for guards)
+      const hasStarted =
+        Boolean(data.startedAt) ||
+        String(data.status || '').toLowerCase().includes('inprogress');
+      hasStartedRef.current = hasStarted;
+
+      // ⏱️ TIMER: use endsAt directly
+      const endsAt = parseServerDate(data.endsAt);
+      console.log('[ATTEMPT] parsed endsAt=', data.endsAt, endsAt);
+
+      if (endsAt) {
+        const now = new Date();
+        const secs = Math.max(
+          0,
+          Math.floor((endsAt.getTime() - now.getTime()) / 1000)
+        );
+        setTimeLeftSec(secs);
+        console.log('[ATTEMPT] computed timeLeftSec=', secs);
+      } else {
+        // no endsAt → no auto-submit
+        setTimeLeftSec(null);
+        console.log('[ATTEMPT] no endsAt provided. Timer disabled.');
+      }
+
+      loadedRef.current = true;
+    } catch (err) {
+      console.error('[ATTEMPT] load failed', err);
+      Modal.error({
+        title: 'Unable to load attempt',
+        content: String(err),
+        onOk: () => router.replace('/student/exams/listing'),
+      });
+    } finally {
+      if (mounted) setLoading(false);
     }
   };
 
-  // ---------- Load attempt ----------
-  useEffect(() => {
-    if (Number.isNaN(attemptId)) return;
-    let mounted = true;
+  load();
 
-    const load = async () => {
-      setLoading(true);
-      try {
-        const data = await getAttempt(attemptId);
-        if (!mounted) return;
-        console.log('[ATTEMPT] loaded', data);
+  return () => {
+    mounted = false;
+  };
+}, [attemptId, router]);
 
-        // store attempt object returned by server into state
-        setAttempt(data);
-        setQuestions(data.questions || []);
-
-        // store duration in ref for later timer guards
-        const duration = Number(data.durationMinutes ?? 0);
-        durationRef.current = duration;
-        console.log('[ATTEMPT] server durationMinutes=', duration);
-
-        // build answers map if server returned savedAnswers
-        if (data.savedAnswers && Array.isArray(data.savedAnswers)) {
-          const map: Record<number, any> = {};
-          for (const sa of data.savedAnswers) {
-            map[sa.questionId] = { selectedOptionId: sa.selectedOptionId ?? undefined, marked: !!sa.isMarkedForReview };
-          }
-          setAnswers(map);
-        }
-
-        // determine if started (prefer explicit startedAt)
-        const hasStarted = Boolean(data.startedAt) || String(data.status || '').toLowerCase().includes('inprogress');
-        hasStartedRef.current = hasStarted;
-
-        // compute timer only if we have positive duration AND a start time
-        const startedAtStr = data.startedAt ?? data.attemptedOn ?? null;
-        const startedAt = parseServerDate(startedAtStr);
-
-        console.log('[ATTEMPT] parsed startedAtStr=', startedAtStr, 'parsed date=', startedAt, 'duration=', duration);
-
-        if (duration > 0 && startedAt) {
-          const end = new Date(startedAt.getTime() + duration * 60000);
-          const now = new Date();
-          console.log('[ATTEMPT] start, end, now:', startedAt.toISOString(), end.toISOString(), now.toISOString());
-          const secs = Math.max(0, Math.floor((end.getTime() - now.getTime()) / 1000));
-          setTimeLeftSec(secs);
-          console.log('[ATTEMPT] computed timeLeftSec=', secs);
-        } else {
-          // no meaningful timer available — do not auto-submit
-          setTimeLeftSec(null);
-          console.log('[ATTEMPT] no timer (duration missing/0 or startedAt missing). Not auto-submitting on load.');
-        }
-
-        loadedRef.current = true;
-      } catch (err) {
-        console.error('[ATTEMPT] load failed', err);
-        Modal.error({ title: 'Unable to load attempt', content: String(err), onOk: () => router.replace('/student/exams/listing') });
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    load();
-
-    return () => { mounted = false; };
-  }, [attemptId, router]);
 
   // ---------- small SignalR join (defensive) ----------
   useEffect(() => {
@@ -211,12 +210,6 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
     // if there's no numeric timer or attempt hasn't started — skip
     if (timeLeftSec === null) {
       console.debug('[ATTEMPT][TIMER] no timer set; skipping.');
-      return;
-    }
-
-    // Only run auto-submit logic if the paper actually had a positive duration
-    if (durationRef.current <= 0) {
-      console.debug('[ATTEMPT][TIMER] duration is zero; skipping auto-submit.');
       return;
     }
 
@@ -316,6 +309,9 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
       setSaving(false);
     }
   };
+  const allAnswered = questions.every(
+    q => answers[q.questionId]?.selectedOptionId
+  );
 
   const handleNext = async () => {
     const q = questions[currentIndex];
@@ -341,6 +337,16 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
 
   // ---------- submit / autosubmit ----------
   const handleSubmit = () => {
+
+    const allAnswered = questions.every(
+    q => answers[q.questionId]?.selectedOptionId
+  );
+
+  if (!allAnswered) {
+    message.warning('Please answer all questions before submitting.');
+    return;
+  }
+
     Modal.confirm({
       title: 'Submit Attempt',
       content: 'Submit attempt now? You will not be able to continue.',
@@ -369,11 +375,6 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
 
   const handleAutoSubmit = async () => {
     if (didSubmitRef.current) return;
-    if (durationRef.current <= 0) {
-      console.debug('[ATTEMPT][AUTO] skipping auto-submit because duration <= 0');
-      return;
-    }
-
     didSubmitRef.current = true;
     // stop timers & background work
     cleanup();
@@ -445,9 +446,18 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
                 <div>
                   <Space>
                     {/* <Button onClick={handlePrevious}>Previous</Button> */}
-                    <Button onClick={handleNext}>Next</Button>
+                    <Button
+                        onClick={handleNext}
+                        disabled={!selectedId}
+                      >
+                        Next
+                      </Button>
                     {/* <Button onClick={() => { if (q.questionId) toggleMark(q.questionId); }}>{isMarked ? 'Unmark' : 'Mark'}</Button> */}
-                    <Button type="primary" onClick={handleSubmit}>Submit</Button>
+                    {currentIndex === total - 1 && (
+                      <Button type="primary" onClick={handleSubmit}>
+                        Submit
+                      </Button>
+                    )}
                   </Space>
                 </div>
               </div>

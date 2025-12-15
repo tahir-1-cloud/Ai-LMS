@@ -8,12 +8,14 @@ import { toast } from 'sonner';
 import ComponentCard from '@/components/common/ComponentCard';
 import Label from '@/components/form/Label';
 import Input from '@/components/form/input/InputField';
+import { useRouter } from 'next/navigation';
 
 export default function AddPaperForm() {
   const [title, setTitle] = useState('');
   const [testDateTime, setTestDateTime] = useState('');
   const [durationMinutes, setDurationMinutes] = useState(40);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,11 +47,12 @@ export default function AddPaperForm() {
     try {
       setIsSubmitting(true);
       await addPaper(paper);
+
       toast.success('Paper added successfully');
 
-      setTitle('');
-      setTestDateTime('');
-      setDurationMinutes(40);
+      // ✅ navigate to paper listing page
+      router.push('/admin/paper/listing');
+
     } catch (error: unknown) {
       toast.error((error as Error)?.message || 'Something went wrong');
     } finally {
