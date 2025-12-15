@@ -34,6 +34,7 @@ export interface StudentPaperDto {
   questions: StudentQuestionDto[];
   paperSessions?: StudentPaperSessionDto[];
   isAttempted: boolean;
+  hasAttempted: boolean;
 }
 
 export interface AdminAttemptListDto {

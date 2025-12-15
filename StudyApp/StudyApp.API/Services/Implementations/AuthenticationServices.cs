@@ -83,8 +83,6 @@ namespace StudyApp.API.Services.Implementations
         }
 
 
-     
-
         public async Task<LoginResponse> LoginStudent(LoginModel student)
         {
             if (string.IsNullOrWhiteSpace(student.UserName))
@@ -134,7 +132,7 @@ namespace StudyApp.API.Services.Implementations
                 ExpiresAt = expiresAt
             };
 
-            await _userLoginRepository.AddAsync(newSession);
+            await _userLoginRepository.AddAsync(session);
 
             return new LoginResponse
             {
@@ -156,11 +154,10 @@ namespace StudyApp.API.Services.Implementations
 
             var claims = new[]
             {
-                    new Claim(JwtRegisteredClaimNames.Sub, applicationUser.Id.ToString()),
-                    new Claim("fullName", applicationUser.FullName),
-                    new Claim("session", applicationUser.Session.Title),
-                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                    new Claim(ClaimTypes.NameIdentifier, applicationUser.Id.ToString())
+                        new Claim(ClaimTypes.NameIdentifier, applicationUser.Id.ToString()),
+                        new Claim("fullName", applicationUser.FullName),
+                        new Claim("session", applicationUser.Session.Title),
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
             var token = new JwtSecurityToken(

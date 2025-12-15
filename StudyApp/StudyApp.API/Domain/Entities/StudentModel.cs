@@ -67,6 +67,7 @@
         public DateTime? AvailableTo { get; set; }
         public int? DurationMinutes { get; set; }
         public bool IsAttempted { get; set; }
+        public bool HasAttempted { get; set; }
         public List<StudentQuestionDto> Questions { get; set; } = new();
         public List<StudentPaperSessionDto>? PaperSessions { get; set; } = new();
     }

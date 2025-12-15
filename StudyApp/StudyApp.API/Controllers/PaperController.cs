@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using StudyApp.API.Domain.Entities;
 using StudyApp.API.Models;
 using StudyApp.API.Services.Implementations;
 using StudyApp.API.Services.Interfaces;
+using System.Security.Claims;
 
 namespace StudyApp.API.Controllers
 {
@@ -47,11 +49,15 @@ namespace StudyApp.API.Controllers
             }
         }
         [HttpGet]
-        public async Task<IActionResult> GetPaperWithQuestionDto(int paperId)
+        public async Task<IActionResult> GetPaperWithQuestionDto(int paperId, int studentId)
         {
             try
             {
-                int studentId = 3; // TEMP (replace with auth later)
+                studentId = int.Parse(
+                            User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                            ?? throw new UnauthorizedAccessException("User id not found in token")
+                        );
+                // int studentId = 3; // TEMP (replace with auth later)
                 StudentPaperDto? dto = await _paperServices.GetStudentPaperAsync(paperId,studentId);
                 if (dto == null) return NotFound($"Paper with id {paperId} not found.");
                 return Ok(dto);
@@ -177,6 +183,11 @@ namespace StudyApp.API.Controllers
         {
             try
             {
+                long studentId = long.Parse(
+            User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+            ?? throw new UnauthorizedAccessException("User id not found in token")
+        );
+                model.StudentId = (int)studentId;
                 //model.StudentId = 3;
                 var resp = await _paperServices.StartAttempt(model);
                 return Ok(resp);
@@ -215,9 +226,12 @@ namespace StudyApp.API.Controllers
         [HttpPost]
         public async Task<IActionResult> SaveAnswer([FromBody] SaveAnswerDto model)
         {
-            long studentId = long.Parse(User.FindFirst("id")?.Value ?? "0");
             try
             {
+                long studentId = long.Parse(
+                            User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                            ?? throw new UnauthorizedAccessException("User id not found in token")
+                        );
                 //studentId = 3; //temp hardcode for testing
                 await _service.SaveAnswerAsync(model, studentId);
                 return Ok();
@@ -231,9 +245,13 @@ namespace StudyApp.API.Controllers
         [HttpPost]
         public async Task<IActionResult> CompleteAttempt([FromBody] CompleteAttemptDto model)
         {
-            long studentId = long.Parse(User.FindFirst("id")?.Value ?? "0");
+            
             try
             {
+                long studentId = long.Parse(
+                            User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                            ?? throw new UnauthorizedAccessException("User id not found in token")
+                        );
                 //studentId = 3; //temp hardcode for testing
                 await _service.CompleteAttemptAsync(model, studentId);
                 return Ok();
@@ -247,10 +265,13 @@ namespace StudyApp.API.Controllers
         [HttpGet("{attemptId:int}/result")]
         public async Task<IActionResult> GetAttemptResult(int attemptId)
         {
-            long studentId = long.Parse(User.FindFirst("id")?.Value ?? "0");
 
             try
             {
+                long studentId = long.Parse(
+                            User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                            ?? throw new UnauthorizedAccessException("User id not found in token")
+                        );
                 //studentId = 3; //temp hardcode for testing
                 var result = await _service.GetAttemptResultAsync(attemptId, studentId);
                 if (result == null) return NotFound();

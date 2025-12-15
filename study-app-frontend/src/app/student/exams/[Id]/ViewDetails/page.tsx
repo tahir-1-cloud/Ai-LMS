@@ -1,4 +1,5 @@
-"use client";
+'use client';
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -37,9 +38,7 @@ function formatPakistaniDate(dateString?: string | null): string {
 }
 
 function getExamWindow(paper: StudentPaperDto) {
-  if (!paper.testConductedOn) {
-    return null;
-  }
+  if (!paper.testConductedOn) return null;
 
   const start = new Date(paper.testConductedOn);
   const end = new Date(
@@ -54,17 +53,12 @@ function getExamStatus(paper: StudentPaperDto) {
   if (!window) return 'UNKNOWN';
 
   const now = new Date();
-  const { start, end } = window;
-
-  if (now < start) return 'UPCOMING';
-  if (now > end) return 'ENDED';
+  if (now < window.start) return 'UPCOMING';
+  if (now > window.end) return 'ENDED';
   return 'LIVE';
 }
 
-
-
 export default function ViewDetailsPage({
- 
   params,
 }: {
   params: { Id: string };
@@ -86,7 +80,8 @@ export default function ViewDetailsPage({
         const p = await getStudentPaper(paperId);
         setPaper(p);
 
-        if (p.isAttempted) {
+        // fetch attempt id ONLY if completed
+        if (p.hasAttempted && p.isAttempted) {
           const attempts = await getMyAttempts(studentId);
           const att = attempts.find(a => a.paperId === paperId);
           if (att) setAttemptId(att.id);
@@ -98,48 +93,16 @@ export default function ViewDetailsPage({
         setLoading(false);
       }
     })();
-  }, [paperId]);
-
-  // function isWithinWindow(): boolean {
-  //   if (!paper) return false;
-  //   if (!paper.availableFrom && !paper.availableTo) return true;
-
-  //   const now = new Date();
-  //   if (paper.availableFrom && new Date(paper.availableFrom) > now) return false;
-  //   if (paper.availableTo && new Date(paper.availableTo) < now) return false;
-  //   return true;
-  // }
-
-  function isWithinWindow(): boolean {
-    if (!paper) return false;
-    if (!paper.availableFrom && !paper.availableTo) return true;
-
-    const now = new Date();
-    if (paper.availableFrom && new Date(paper.availableFrom) > now) return false;
-    if (paper.availableTo && new Date(paper.availableTo) < now) return false;
-    return true;
-  }
+  }, [paperId, studentId]);
 
   function canStartTest(paper: StudentPaperDto | null): boolean {
-  if (!paper) return false;
-  if (paper.isAttempted) return false;
-
-  return getExamStatus(paper) === 'LIVE';
-}
-
+    if (!paper) return false;
+    if (paper.hasAttempted) return false;
+    return getExamStatus(paper) === 'LIVE';
+  }
 
   async function handleStart() {
     if (!paper) return;
-
-    if (paper.isAttempted) {
-      message.info('You have already completed this test.');
-      return;
-    }
-
-    if (!isWithinWindow()) {
-      message.warning('This test is not currently available.');
-      return;
-    }
 
     Modal.confirm({
       title: 'Start Test?',
@@ -149,7 +112,7 @@ export default function ViewDetailsPage({
           <Paragraph strong>Please read the rules carefully.</Paragraph>
           <ul style={{ paddingLeft: 18 }}>
             <li>Only <strong>one attempt</strong> is allowed.</li>
-            <li>Once submitted, you cannot re-attempt.</li>
+            <li>If connection breaks, test auto-submits.</li>
             <li>Do not refresh or open multiple tabs.</li>
           </ul>
           <Divider />
@@ -167,7 +130,6 @@ export default function ViewDetailsPage({
           const res = await startAttempt({ paperId, studentId });
           router.push(`/student/exams/attempt/${res.attemptId}`);
         } catch (err: any) {
-          console.error(err);
           message.error(
             err?.response?.data ||
               err?.message ||
@@ -200,6 +162,8 @@ export default function ViewDetailsPage({
     );
   }
 
+  const status = getExamStatus(paper);
+
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-6 flex justify-center">
       <div className="w-full max-w-5xl">
@@ -225,13 +189,15 @@ export default function ViewDetailsPage({
             </div>
             <div className="mt-2">
               <Text strong>Status:</Text>{' '}
-              {paper.isAttempted ? (
-                <Tag color="green">Completed</Tag>
-              ) : getExamStatus(paper) === 'UPCOMING' ? (
+              {paper.hasAttempted && paper.isAttempted ? (
+                <Tag color="success">Completed</Tag>
+              ) : paper.hasAttempted && !paper.isAttempted ? (
+                <Tag color="orange">Submitted</Tag>
+              ) : status === 'UPCOMING' ? (
                 <Tag color="blue">Upcoming</Tag>
-              ) : getExamStatus(paper) === 'LIVE' ? (
+              ) : status === 'LIVE' ? (
                 <Tag color="green">Live</Tag>
-              ) : getExamStatus(paper) === 'ENDED' ? (
+              ) : status === 'ENDED' ? (
                 <Tag color="red">Ended</Tag>
               ) : (
                 <Tag>Unknown</Tag>
@@ -244,14 +210,15 @@ export default function ViewDetailsPage({
           <Title level={5}>Instructions</Title>
           <ul className="list-disc pl-6 text-sm text-gray-700">
             <li>Only one attempt is allowed.</li>
-            <li>Once submitted, you cannot retry.</li>
+            <li>No resume once test starts.</li>
             <li>Ensure stable internet connection.</li>
           </ul>
 
           <Divider />
 
-          <div className="mt-6">
-            {!paper.isAttempted && (
+          <div className="mt-6 flex gap-3">
+            {/* 🟢 START */}
+            {!paper.hasAttempted && (
               <Button
                 type="primary"
                 size="large"
@@ -259,17 +226,23 @@ export default function ViewDetailsPage({
                 disabled={!canStartTest(paper)}
                 onClick={handleStart}
               >
-                {getExamStatus(paper) === 'UPCOMING'
+                {status === 'UPCOMING'
                   ? 'Test Not Started Yet'
-                  : getExamStatus(paper) === 'ENDED'
+                  : status === 'ENDED'
                   ? 'Test Ended'
                   : 'Start Test'}
               </Button>
             )}
 
+            {/* ⛔ SUBMITTED */}
+            {paper.hasAttempted && !paper.isAttempted && (
+              <Tag color="orange" className="px-4 py-2 text-base">
+                Submitted
+              </Tag>
+            )}
 
-
-            {paper.isAttempted && (
+            {/* ✅ RESULT */}
+            {paper.hasAttempted && paper.isAttempted && (
               <Button
                 type="default"
                 size="large"

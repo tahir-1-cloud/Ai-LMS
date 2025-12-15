@@ -258,7 +258,7 @@ namespace StudyApp.API.Repositories
             };
         }
 
-        public async Task<StudentPaperDto?> GetStudentPaperAsync(int paperId,int studentId)
+        public async Task<StudentPaperDto?> GetStudentPaperAsync(int paperId, int studentId)
         {
             IQueryable<Paper> paperQuery =
                 _context.Papers
@@ -272,7 +272,17 @@ namespace StudyApp.API.Repositories
             var paper = await paperQuery.FirstOrDefaultAsync();
             if (paper == null) return null;
 
-            var isAttempted = await _context.StudentAttempts
+            // ✅ ANY attempt (InProgress / Completed / Auto-submitted)
+            var hasAttempted = await _context.StudentAttempts
+                .AsNoTracking()
+                .AnyAsync(a =>
+                    a.PaperId == paperId &&
+                    a.StudentId == studentId &&
+                    !a.IsDeleted
+                );
+
+            // ✅ COMPLETED attempt only
+            var isCompleted = await _context.StudentAttempts
                 .AsNoTracking()
                 .AnyAsync(a =>
                     a.PaperId == paperId &&
@@ -287,9 +297,13 @@ namespace StudyApp.API.Repositories
                 Title = paper.Title ?? string.Empty,
                 TestConductedOn = paper.TestConductedOn,
                 DurationMinutes = paper.DurationMinutes,
+
                 AvailableFrom = null,
                 AvailableTo = null,
-                IsAttempted = isAttempted,
+
+                // ✅ FIXED FLAGS
+                HasAttempted = hasAttempted,
+                IsAttempted = isCompleted,
 
                 Questions = paper.Questions.Select(q => new StudentQuestionDto
                 {
@@ -311,19 +325,20 @@ namespace StudyApp.API.Repositories
                 {
                     PaperId = ps.PaperId,
                     SessionId = ps.SessionId,
-                    SessionTitle = ps.Session?.Title // ✅ NOW FILLED
+                    SessionTitle = ps.Session?.Title
                 }).ToList();
 
                 var first = dto.PaperSessions.FirstOrDefault();
                 if (first != null)
                 {
                     dto.SessionId = first.SessionId;
-                    dto.SessionTitle = first.SessionTitle; // ✅ NOW WORKS
+                    dto.SessionTitle = first.SessionTitle;
                 }
             }
 
             return dto;
         }
+
 
 
 

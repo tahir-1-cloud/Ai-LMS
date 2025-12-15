@@ -1,7 +1,18 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Table, Button, Space, Tag, Spin, message, Modal,Typography,Divider } from 'antd';
+import {
+  Table,
+  Button,
+  Space,
+  Tag,
+  Spin,
+  message,
+  Modal,
+  Typography,
+  Divider,
+  Input,
+} from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -12,14 +23,38 @@ import {
 } from '@/services/studentService';
 import type { AssignedPaperDto, StudentAttemptDto } from '@/types/student';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
-const { Title, Text, Paragraph } = Typography;
-const [searchText, setSearchText] = useState('');
+
+const { Title, Paragraph, Text } = Typography;
+
+/* ------------------ HELPERS ------------------ */
 
 function getStudentId(): number {
   return Number(process.env.NEXT_PUBLIC_TEST_STUDENT_ID ?? 1);
 }
+
+function formatPakistaniDate(date?: string | null) {
+  if (!date) return '--';
+
+  return new Date(date).toLocaleString('en-PK', {
+    timeZone: 'Asia/Karachi',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
+
+function getExamStatus(r: AssignedPaperDto) {
+  const now = new Date();
+  if (r.availableFrom && new Date(r.availableFrom) > now) return 'UPCOMING';
+  if (r.availableTo && new Date(r.availableTo) < now) return 'ENDED';
+  return 'LIVE';
+}
+
 function getStatusPriority(r: AssignedPaperDto): number {
-  if (r.isAttempted) return 4; // Completed at the bottom
+  if (r.isAttempted) return 4;
 
   const status = getExamStatus(r);
   if (status === 'LIVE') return 1;
@@ -29,12 +64,20 @@ function getStatusPriority(r: AssignedPaperDto): number {
   return 5;
 }
 
+function safeDateValue(date?: string | null): number {
+  if (!date) return Number.MAX_SAFE_INTEGER;
+  return new Date(date).getTime();
+}
+
+/* ------------------ COMPONENT ------------------ */
+
 export default function StudentAssignedTestsPage() {
   const [assigned, setAssigned] = useState<AssignedPaperDto[]>([]);
   const [attempts, setAttempts] = useState<StudentAttemptDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [attemptsLoading, setAttemptsLoading] = useState(false);
   const [starting, setStarting] = useState<number | null>(null);
+  const [searchText, setSearchText] = useState('');
 
   const studentId = getStudentId();
   const router = useRouter();
@@ -50,8 +93,7 @@ export default function StudentAssignedTestsPage() {
     try {
       const data = await getAssignedPapersForStudent(studentId);
       setAssigned(data);
-    } catch (err) {
-      console.error(err);
+    } catch {
       message.error('Failed to load assigned tests');
     } finally {
       setLoading(false);
@@ -63,103 +105,41 @@ export default function StudentAssignedTestsPage() {
     try {
       const data = await getAttemptsForStudent(studentId);
       setAttempts(data ?? []);
-    } catch (err) {
-      console.error(err);
     } finally {
       setAttemptsLoading(false);
     }
   };
-
-  // 🇵🇰 Pakistani date formatter
-  function formatPakistaniDate(dateString?: string | null) {
-    if (!dateString) return '--';
-
-    return new Date(dateString).toLocaleString('en-PK', {
-      timeZone: 'Asia/Karachi',
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric',
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-  }
-
-  // Exam status based ONLY on backend window
-  function getExamStatus(r: AssignedPaperDto) {
-    const now = new Date();
-
-    if (r.availableFrom && new Date(r.availableFrom) > now) return 'UPCOMING';
-    if (r.availableTo && new Date(r.availableTo) < now) return 'ENDED';
-    return 'LIVE';
-  }
 
   function canStartTest(r: AssignedPaperDto) {
     if (r.isAttempted) return false;
     return getExamStatus(r) === 'LIVE';
   }
 
-
   const getAttemptForPaper = (paperId: number) =>
     attempts.find(a => Number(a.paperId) === Number(paperId)) ?? null;
 
   async function handleStart(paperId: number) {
-    const assignedRow = assigned.find(p => p.id === paperId);
-
-    // 🛡️ SAFETY CHECK using isAttempted (authoritative)
-    if (assignedRow?.isAttempted) {
-      message.info('You have already completed this test.');
-      return;
-    }
-
-    const now = new Date();
-    if (assignedRow) {
-      if (assignedRow.availableFrom && new Date(assignedRow.availableFrom) > now) {
-        message.warning('This test is not open yet.');
-        return;
-      }
-      if (assignedRow.availableTo && new Date(assignedRow.availableTo) < now) {
-        message.warning('This test window has ended.');
-        return;
-      }
-    }
-
     Modal.confirm({
       title: 'Start Test?',
       icon: <ExclamationCircleOutlined />,
       content: (
-        <div>
+        <>
           <Paragraph strong>Please read the rules carefully.</Paragraph>
           <ul style={{ paddingLeft: 18 }}>
-            <li>Only <strong>one attempt</strong> is allowed.</li>
-            <li>Once submitted, you cannot re-attempt.</li>
+            <li>Only one attempt is allowed.</li>
+            <li>Once started, test will auto-submit on disconnect.</li>
             <li>Do not refresh or open multiple tabs.</li>
           </ul>
           <Divider />
-        </div>
+        </>
       ),
-      okText: 'Start',
-      cancelText: 'Cancel',
       onOk: async () => {
         try {
           setStarting(paperId);
-
           const resp = await startAttemptService({ paperId, studentId });
-
-          if (!resp?.attemptId) {
-            message.error('Failed to start attempt');
-            return;
-          }
-
-          message.success('Test started!');
           router.push(`/student/exams/attempt/${resp.attemptId}`);
         } catch (err: any) {
-          console.error(err);
-          const serverMsg =
-            err?.response?.data ||
-            err?.message ||
-            'Could not start attempt';
-          message.warning(String(serverMsg));
+          message.warning(err?.response?.data || 'Could not start attempt');
         } finally {
           setStarting(null);
         }
@@ -167,39 +147,40 @@ export default function StudentAssignedTestsPage() {
     });
   }
 
-  function handleResume(attemptId: number) {
-    router.push(`/student/exams/attempt/${attemptId}`);
-  }
+  /* ------------------ FILTER + SORT ------------------ */
+
+  const filteredAndSortedData = assigned
+    .filter(r =>
+      r.title?.toLowerCase().includes(searchText.toLowerCase())
+    )
+    .sort((a, b) => {
+      const p1 = getStatusPriority(a);
+      const p2 = getStatusPriority(b);
+      if (p1 !== p2) return p1 - p2;
+      return safeDateValue(a.availableFrom) - safeDateValue(b.availableFrom);
+    });
+
+  /* ------------------ TABLE ------------------ */
 
   const columns: ColumnsType<AssignedPaperDto> = [
+    { title: '#', render: (_, __, i) => i + 1 },
+
+    { title: 'Title', dataIndex: 'title' },
+
     {
-      title: '#',
-      width: 60,
-      render: (_: any, __: AssignedPaperDto, idx: number) => idx + 1,
-    },
-    {
-      title: 'Title',
-      dataIndex: 'title',
-      render: (t, r) => (
-        <div>
-          <div className="font-medium text-gray-800">{t}</div>
-        </div>
-      ),
-    },
-    {
-      title: 'Test Date & Time',
-      dataIndex: 'testConductedOn',
-      render: d => formatPakistaniDate(d),
-    },
-    {
-      title: 'Window',
+      title: 'Availability',
       render: (_, r) => (
-        <div className="text-sm text-gray-600">
-          {formatPakistaniDate(r.availableFrom)} →{' '}
-          {formatPakistaniDate(r.availableTo)}
+        <div className="text-sm">
+          <div>
+            <Text strong>From:</Text> {formatPakistaniDate(r.availableFrom)}
+          </div>
+          <div>
+            <Text strong>To:</Text> {formatPakistaniDate(r.availableTo)}
+          </div>
         </div>
       ),
     },
+
     {
       title: 'Status',
       render: (_, r) => {
@@ -207,43 +188,61 @@ export default function StudentAssignedTestsPage() {
 
         const att = getAttemptForPaper(r.id);
         if (att?.status === 'InProgress')
-          return <Tag color="processing">In Progress</Tag>;
+          return <Tag color="orange">Submitted</Tag>;
 
         const status = getExamStatus(r);
-
-        if (status === 'UPCOMING') return <Tag color="blue">Upcoming</Tag>;
         if (status === 'LIVE') return <Tag color="green">Live</Tag>;
+        if (status === 'UPCOMING') return <Tag color="blue">Upcoming</Tag>;
         if (status === 'ENDED') return <Tag color="red">Ended</Tag>;
 
         return <Tag>Unknown</Tag>;
       },
     },
+
     {
       title: 'Action',
       render: (_, r) => {
         const att = getAttemptForPaper(r.id);
 
-        return (
-          <Space size="small">
-            {!att && (
-              <Button
-                type="primary"
-                disabled={!canStartTest(r)}
-                onClick={() => handleStart(r.id)}
-              >
-                Start
-              </Button>
-            )}
-            {att?.status === 'InProgress' && (
-              <Button type="primary" onClick={() => handleResume(att.id)}>
-                Resume
-              </Button>
-            )}
-            {r.isAttempted && att && (
+        // ✅ COMPLETED
+        if (r.isAttempted && att) {
+          return (
+            <Space>
               <Link href={`/student/exams/results/${att.id}`}>
-                <Button>Result</Button>
+                <Button type="primary">Result</Button>
               </Link>
-            )}
+
+              <Link href={`/student/exams/${r.id}/ViewDetails`}>
+                <Button>Details</Button>
+              </Link>
+            </Space>
+          );
+        }
+
+        // ⛔ IN-PROGRESS (AUTO-SUBMITTED)
+        if (att?.status === 'InProgress') {
+          return (
+            <Space>
+              <Tag color="orange">Submitted</Tag>
+
+              <Link href={`/student/exams/${r.id}/ViewDetails`}>
+                <Button>Details</Button>
+              </Link>
+            </Space>
+          );
+        }
+
+        // 🟢 NEVER ATTEMPTED
+        return (
+          <Space>
+            <Button
+              type="primary"
+              disabled={!canStartTest(r)}
+              loading={starting === r.id}
+              onClick={() => handleStart(r.id)}
+            >
+              Start
+            </Button>
 
             <Link href={`/student/exams/${r.id}/ViewDetails`}>
               <Button>Details</Button>
@@ -256,10 +255,21 @@ export default function StudentAssignedTestsPage() {
 
   const isBusy = loading || attemptsLoading;
 
+  /* ------------------ UI ------------------ */
+
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-6 flex justify-center">
       <div className="w-full max-w-5xl bg-white rounded-2xl shadow-md p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-6">📘 Assigned Tests</h1>
+        <div className="flex justify-between items-center mb-4">
+          <Title level={3}>📘 Assigned Tests</Title>
+          <Input.Search
+            placeholder="Search by title"
+            allowClear
+            value={searchText}
+            onChange={e => setSearchText(e.target.value)}
+            style={{ width: 260 }}
+          />
+        </div>
 
         {isBusy ? (
           <div className="flex justify-center py-20">
@@ -268,7 +278,7 @@ export default function StudentAssignedTestsPage() {
         ) : (
           <Table
             columns={columns}
-            dataSource={assigned}
+            dataSource={filteredAndSortedData}
             rowKey="id"
             pagination={{ pageSize: 10 }}
           />
