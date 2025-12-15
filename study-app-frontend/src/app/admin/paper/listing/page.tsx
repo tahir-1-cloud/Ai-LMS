@@ -215,30 +215,45 @@ export default function Page() {
 
   // ---------- Assign modal: show all sessions, but render "Assigned" disabled for already-assigned ----------
   const openAssignModal = async (paper: PaperModel) => {
+  setSessionsLoading(true);
+  setSessionsError(null);
+
+  try {
+    // STEP 1: validate paper has questions
+    const paperResp = await axiosInstance.get(
+      `/Paper/GetPaperWithQuestion?paperId=${paper.id}`
+    );
+
+    const questions = paperResp?.data?.questions ?? [];
+
+    if (questions.length === 0) {
+      message.error('This paper has no questions. Please add questions before assigning.');
+      return; // STOP HERE
+    }
+
+    // STEP 2: now safe to open modal
     setAssignPaper(paper);
     setAssignModalVisible(true);
     setSessions([]);
     setAssignedSessionIds([]);
-    setSessionsError(null);
     setSelectedSessionId(null);
-    setSessionsLoading(true);
 
-    try {
-      // 1) load all sessions (show them all so admin can see assigned items)
-      const all = await getAllSessions();
-      setSessions(all);
+    // STEP 3: load all sessions
+    const all = await getAllSessions();
+    setSessions(all);
 
-      // 2) load paper details to get assigned session ids
-      const resp = await axiosInstance.get(`/Paper/GetPaperWithQuestion?paperId=${paper.id}`);
-      const assignedIds = resp?.data?.paperSessions?.map((ps: any) => Number(ps.sessionId)) ?? [];
-      setAssignedSessionIds(Array.from(new Set(assignedIds)));
-    } catch (err: any) {
-      console.error('Failed to load sessions or paper assignments', err);
-      setSessionsError('Failed to load sessions');
-    } finally {
-      setSessionsLoading(false);
-    }
-  };
+    // STEP 4: already assigned sessions
+    const assignedIds =
+      paperResp?.data?.paperSessions?.map((ps: any) => Number(ps.sessionId)) ?? [];
+
+    setAssignedSessionIds(Array.from(new Set(assignedIds)));
+  } catch (err: any) {
+    console.error('Failed to load sessions or paper assignments', err);
+    setSessionsError('Failed to load sessions or validate paper');
+  } finally {
+    setSessionsLoading(false);
+  }
+};
 
   const closeAssignModal = () => {
     setAssignModalVisible(false);
@@ -285,10 +300,30 @@ export default function Page() {
       key: 'title',
     },
     {
-      title: 'Test Date',
+      title: 'Test Date & Time',
       dataIndex: 'testConductedOn',
       key: 'testConductedOn',
-      render: (d: string) => new Date(d).toLocaleDateString(),
+      render: (d: string) => {
+        const date = new Date(d);
+        return (
+          <div>
+            <div className="font-medium">
+              {date.toLocaleDateString(undefined, {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+              })}
+            </div>
+            <div className="text-xs text-gray-500">
+              {date.toLocaleTimeString(undefined, {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true,
+              })}
+            </div>
+          </div>
+        );
+      },
     },
     {
       title: 'Action',

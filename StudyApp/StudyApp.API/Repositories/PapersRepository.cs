@@ -50,17 +50,27 @@ namespace StudyApp.API.Repositories
 
         public async Task AssignPaperToSessionAsync(int paperId, int sessionId)
         {
-            var paperExists = await _context.Papers.AnyAsync(p => p.Id == paperId);
-            if (!paperExists) throw new KeyNotFoundException($"Paper with id {paperId} not found.");
+            var paper = await _context.Papers
+                .Include(p => p.Questions)
+                .FirstOrDefaultAsync(p => p.Id == paperId);
+
+            if (paper == null)
+                throw new KeyNotFoundException($"Paper with id {paperId} not found.");
+
+            if (paper.Questions == null || !paper.Questions.Any())
+                throw new InvalidOperationException(
+                    "Paper must have at least one question before it can be assigned to a session."
+                );
 
             var sessionExists = await _context.Sessions.AnyAsync(s => s.Id == sessionId);
-            if (!sessionExists) throw new KeyNotFoundException($"Session with id {sessionId} not found.");
+            if (!sessionExists)
+                throw new KeyNotFoundException($"Session with id {sessionId} not found.");
 
-            // check existing link
             var exists = await _context.PaperSessions
                 .AnyAsync(ps => ps.PaperId == paperId && ps.SessionId == sessionId);
 
-            if (exists) return;
+            if (exists)
+                return;
 
             var link = new PaperSession
             {
@@ -72,6 +82,7 @@ namespace StudyApp.API.Repositories
             _context.PaperSessions.Add(link);
             await _context.SaveChangesAsync();
         }
+
 
         public async Task RemovePaperSession(PaperSession entry)
         {
@@ -157,12 +168,13 @@ namespace StudyApp.API.Repositories
 
         public async Task<List<AssignedPaperDto>> GetAssignedPapersForStudent(int studentId)
         {
+            // Papers already attempted by student
             var attemptedPaperIds = await _context.StudentAttempts
                 .Where(a => a.StudentId == studentId)
                 .Select(a => a.PaperId)
                 .ToListAsync();
 
-            var q =
+            var query =
                 from ps in _context.PaperSessions
                 join p in _context.Papers on ps.PaperId equals p.Id
                 join s in _context.Sessions on ps.SessionId equals s.Id
@@ -171,21 +183,23 @@ namespace StudyApp.API.Repositories
                     Id = p.Id,
                     Title = p.Title,
                     TestConductedOn = p.TestConductedOn,
+
                     SessionId = s.Id,
                     SessionTitle = s.Title,
-                    AvailableFrom = null,
-                    AvailableTo = null,
+                    AvailableFrom = p.TestConductedOn,
+                    AvailableTo = p.TestConductedOn.AddMinutes(p.DurationMinutes),
 
                     IsAttempted = attemptedPaperIds.Contains(p.Id)
                 };
 
-            var list = await q.ToListAsync();
+            var list = await query.ToListAsync();
 
             return list
                 .GroupBy(x => x.Id)
                 .Select(g => g.First())
                 .ToList();
         }
+
 
 
         public async Task<List<StudentAttemptDto>> GetAttemptsForStudent(int studentId)
@@ -244,29 +258,20 @@ namespace StudyApp.API.Repositories
             };
         }
 
-        public async Task<StudentPaperDto?> GetStudentPaperAsync(int paperId)
+        public async Task<StudentPaperDto?> GetStudentPaperAsync(int paperId,int studentId)
         {
-            long studentId = 3; // TEMP (replace with auth later)
-
             IQueryable<Paper> paperQuery =
                 _context.Papers
-                    .AsNoTracking() // ✅ read-only
+                    .AsNoTracking()
                     .Where(p => p.Id == paperId)
                     .Include(p => p.Questions)
-                        .ThenInclude(q => q.Options);
-
-            var paperType = typeof(Paper);
-            var hasPaperSessionsNav = paperType.GetProperty("PaperSessions") != null;
-
-            if (hasPaperSessionsNav)
-            {
-                paperQuery = paperQuery.Include(p => p.PaperSessions);
-            }
+                        .ThenInclude(q => q.Options)
+                    .Include(p => p.PaperSessions)
+                        .ThenInclude(ps => ps.Session);
 
             var paper = await paperQuery.FirstOrDefaultAsync();
             if (paper == null) return null;
 
-            // ✅ AsNoTracking – existence check only
             var isAttempted = await _context.StudentAttempts
                 .AsNoTracking()
                 .AnyAsync(a =>
@@ -284,8 +289,6 @@ namespace StudyApp.API.Repositories
                 DurationMinutes = paper.DurationMinutes,
                 AvailableFrom = null,
                 AvailableTo = null,
-
-                // ✅ key flag
                 IsAttempted = isAttempted,
 
                 Questions = paper.Questions.Select(q => new StudentQuestionDto
@@ -302,57 +305,26 @@ namespace StudyApp.API.Repositories
                 }).ToList()
             };
 
-            if (hasPaperSessionsNav && paper.PaperSessions != null)
+            if (paper.PaperSessions != null && paper.PaperSessions.Any())
             {
-                dto.PaperSessions = new List<StudentPaperSessionDto>();
-
-                foreach (var ps in paper.PaperSessions)
+                dto.PaperSessions = paper.PaperSessions.Select(ps => new StudentPaperSessionDto
                 {
-                    dto.PaperSessions.Add(new StudentPaperSessionDto
-                    {
-                        PaperId = ps.PaperId,
-                        SessionId = ps.SessionId,
-                        SessionTitle = ps.Session?.Title
-                    });
-                }
+                    PaperId = ps.PaperId,
+                    SessionId = ps.SessionId,
+                    SessionTitle = ps.Session?.Title // ✅ NOW FILLED
+                }).ToList();
 
                 var first = dto.PaperSessions.FirstOrDefault();
                 if (first != null)
                 {
                     dto.SessionId = first.SessionId;
-                    dto.SessionTitle = first.SessionTitle;
-                }
-
-                // ✅ fill missing titles (still read-only)
-                var missingSessionIds = dto.PaperSessions
-                    .Where(ps => ps.SessionId > 0 && string.IsNullOrEmpty(ps.SessionTitle))
-                    .Select(ps => ps.SessionId)
-                    .Distinct()
-                    .ToList();
-
-                if (missingSessionIds.Count > 0)
-                {
-                    var sessions = await _context.Sessions
-                        .AsNoTracking() // ✅ read-only
-                        .Where(s => missingSessionIds.Contains(s.Id))
-                        .Select(s => new { s.Id, s.Title })
-                        .ToListAsync();
-
-                    var lookup = sessions.ToDictionary(s => s.Id, s => s.Title);
-
-                    foreach (var ps in dto.PaperSessions)
-                    {
-                        if (string.IsNullOrEmpty(ps.SessionTitle) &&
-                            lookup.TryGetValue(ps.SessionId, out var title))
-                        {
-                            ps.SessionTitle = title;
-                        }
-                    }
+                    dto.SessionTitle = first.SessionTitle; // ✅ NOW WORKS
                 }
             }
 
             return dto;
         }
+
 
 
 

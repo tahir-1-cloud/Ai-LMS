@@ -13,9 +13,20 @@ import {
 import type { AssignedPaperDto, StudentAttemptDto } from '@/types/student';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 const { Title, Text, Paragraph } = Typography;
+const [searchText, setSearchText] = useState('');
 
 function getStudentId(): number {
   return Number(process.env.NEXT_PUBLIC_TEST_STUDENT_ID ?? 1);
+}
+function getStatusPriority(r: AssignedPaperDto): number {
+  if (r.isAttempted) return 4; // Completed at the bottom
+
+  const status = getExamStatus(r);
+  if (status === 'LIVE') return 1;
+  if (status === 'UPCOMING') return 2;
+  if (status === 'ENDED') return 3;
+
+  return 5;
 }
 
 export default function StudentAssignedTestsPage() {
@@ -58,6 +69,36 @@ export default function StudentAssignedTestsPage() {
       setAttemptsLoading(false);
     }
   };
+
+  // 🇵🇰 Pakistani date formatter
+  function formatPakistaniDate(dateString?: string | null) {
+    if (!dateString) return '--';
+
+    return new Date(dateString).toLocaleString('en-PK', {
+      timeZone: 'Asia/Karachi',
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  }
+
+  // Exam status based ONLY on backend window
+  function getExamStatus(r: AssignedPaperDto) {
+    const now = new Date();
+
+    if (r.availableFrom && new Date(r.availableFrom) > now) return 'UPCOMING';
+    if (r.availableTo && new Date(r.availableTo) < now) return 'ENDED';
+    return 'LIVE';
+  }
+
+  function canStartTest(r: AssignedPaperDto) {
+    if (r.isAttempted) return false;
+    return getExamStatus(r) === 'LIVE';
+  }
+
 
   const getAttemptForPaper = (paperId: number) =>
     attempts.find(a => Number(a.paperId) === Number(paperId)) ?? null;
@@ -142,26 +183,22 @@ export default function StudentAssignedTestsPage() {
       render: (t, r) => (
         <div>
           <div className="font-medium text-gray-800">{t}</div>
-          <div className="text-xs text-gray-500">{r.sessionTitle}</div>
         </div>
       ),
     },
     {
-      title: 'Test Date',
+      title: 'Test Date & Time',
       dataIndex: 'testConductedOn',
-      render: d => (d ? new Date(d).toLocaleString() : '--'),
+      render: d => formatPakistaniDate(d),
     },
     {
       title: 'Window',
-      render: (_, r) => {
-        if (!r.availableFrom && !r.availableTo) return 'Always available';
-        return (
-          <div className="text-sm text-gray-600">
-            {r.availableFrom ? new Date(r.availableFrom).toLocaleString() : '--'} →{' '}
-            {r.availableTo ? new Date(r.availableTo).toLocaleString() : '--'}
-          </div>
-        );
-      },
+      render: (_, r) => (
+        <div className="text-sm text-gray-600">
+          {formatPakistaniDate(r.availableFrom)} →{' '}
+          {formatPakistaniDate(r.availableTo)}
+        </div>
+      ),
     },
     {
       title: 'Status',
@@ -169,9 +206,16 @@ export default function StudentAssignedTestsPage() {
         if (r.isAttempted) return <Tag color="success">Completed</Tag>;
 
         const att = getAttemptForPaper(r.id);
-        if (att?.status === 'InProgress') return <Tag color="processing">In Progress</Tag>;
+        if (att?.status === 'InProgress')
+          return <Tag color="processing">In Progress</Tag>;
 
-        return <Tag>Not started</Tag>;
+        const status = getExamStatus(r);
+
+        if (status === 'UPCOMING') return <Tag color="blue">Upcoming</Tag>;
+        if (status === 'LIVE') return <Tag color="green">Live</Tag>;
+        if (status === 'ENDED') return <Tag color="red">Ended</Tag>;
+
+        return <Tag>Unknown</Tag>;
       },
     },
     {
@@ -179,32 +223,22 @@ export default function StudentAssignedTestsPage() {
       render: (_, r) => {
         const att = getAttemptForPaper(r.id);
 
-        const now = new Date();
-        const startsLater = r.availableFrom ? new Date(r.availableFrom) > now : false;
-        const ended = r.availableTo ? new Date(r.availableTo) < now : false;
-
-        const startDisabled =
-          r.isAttempted || startsLater || ended;
-
         return (
           <Space size="small">
-            {!r.isAttempted && !att && (
+            {!att && (
               <Button
                 type="primary"
-                disabled={startDisabled}
-                loading={starting === r.id}
+                disabled={!canStartTest(r)}
                 onClick={() => handleStart(r.id)}
               >
                 Start
               </Button>
             )}
-
             {att?.status === 'InProgress' && (
               <Button type="primary" onClick={() => handleResume(att.id)}>
                 Resume
               </Button>
             )}
-
             {r.isAttempted && att && (
               <Link href={`/student/exams/results/${att.id}`}>
                 <Button>Result</Button>

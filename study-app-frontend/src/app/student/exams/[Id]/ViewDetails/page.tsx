@@ -23,6 +23,47 @@ function getStudentId(): number {
   return Number(process.env.NEXT_PUBLIC_TEST_STUDENT_ID ?? 1);
 }
 
+function formatPakistaniDate(dateString?: string | null): string {
+  if (!dateString) return 'TBD';
+
+  return new Date(dateString).toLocaleString('en-PK', {
+    timeZone: 'Asia/Karachi',
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+}
+
+function getExamWindow(paper: StudentPaperDto) {
+  if (!paper.testConductedOn) {
+    return null;
+  }
+
+  const start = new Date(paper.testConductedOn);
+  const end = new Date(
+    start.getTime() + (paper.durationMinutes ?? 0) * 60 * 1000
+  );
+
+  return { start, end };
+}
+
+function getExamStatus(paper: StudentPaperDto) {
+  const window = getExamWindow(paper);
+  if (!window) return 'UNKNOWN';
+
+  const now = new Date();
+  const { start, end } = window;
+
+  if (now < start) return 'UPCOMING';
+  if (now > end) return 'ENDED';
+  return 'LIVE';
+}
+
+
+
 export default function ViewDetailsPage({
   params,
 }: {
@@ -42,17 +83,13 @@ export default function ViewDetailsPage({
       try {
         setLoading(true);
 
-        // 1️⃣ load paper details
         const p = await getStudentPaper(paperId);
         setPaper(p);
 
-        // 2️⃣ if already attempted → find attemptId
         if (p.isAttempted) {
           const attempts = await getMyAttempts(studentId);
           const att = attempts.find(a => a.paperId === paperId);
-          if (att) {
-            setAttemptId(att.id);
-          }
+          if (att) setAttemptId(att.id);
         }
       } catch (err: any) {
         console.error(err);
@@ -62,6 +99,16 @@ export default function ViewDetailsPage({
       }
     })();
   }, [paperId]);
+
+  // function isWithinWindow(): boolean {
+  //   if (!paper) return false;
+  //   if (!paper.availableFrom && !paper.availableTo) return true;
+
+  //   const now = new Date();
+  //   if (paper.availableFrom && new Date(paper.availableFrom) > now) return false;
+  //   if (paper.availableTo && new Date(paper.availableTo) < now) return false;
+  //   return true;
+  // }
 
   function isWithinWindow(): boolean {
     if (!paper) return false;
@@ -73,10 +120,17 @@ export default function ViewDetailsPage({
     return true;
   }
 
+  function canStartTest(paper: StudentPaperDto | null): boolean {
+  if (!paper) return false;
+  if (paper.isAttempted) return false;
+
+  return getExamStatus(paper) === 'LIVE';
+}
+
+
   async function handleStart() {
     if (!paper) return;
 
-    // 🔒 absolute safety
     if (paper.isAttempted) {
       message.info('You have already completed this test.');
       return;
@@ -152,15 +206,13 @@ export default function ViewDetailsPage({
         <div className="bg-white rounded-2xl shadow-md p-8">
           <Title level={4}>{paper.title}</Title>
 
-          <div className="text-sm text-gray-600 mb-4">
+          <div className="text-sm text-gray-600 mb-4 space-y-1">
             <div>
               <Text strong>Session:</Text> {paper.sessionTitle ?? '—'}
             </div>
             <div>
               <Text strong>Test Date:</Text>{' '}
-              {paper.testConductedOn
-                ? new Date(paper.testConductedOn).toLocaleString()
-                : 'TBD'}
+              {formatPakistaniDate(paper.testConductedOn)}
             </div>
             <div>
               <Text strong>Questions:</Text> {paper.questions.length}
@@ -175,8 +227,14 @@ export default function ViewDetailsPage({
               <Text strong>Status:</Text>{' '}
               {paper.isAttempted ? (
                 <Tag color="green">Completed</Tag>
+              ) : getExamStatus(paper) === 'UPCOMING' ? (
+                <Tag color="blue">Upcoming</Tag>
+              ) : getExamStatus(paper) === 'LIVE' ? (
+                <Tag color="green">Live</Tag>
+              ) : getExamStatus(paper) === 'ENDED' ? (
+                <Tag color="red">Ended</Tag>
               ) : (
-                <Tag>Not started</Tag>
+                <Tag>Unknown</Tag>
               )}
             </div>
           </div>
@@ -198,12 +256,18 @@ export default function ViewDetailsPage({
                 type="primary"
                 size="large"
                 loading={startLoading}
-                disabled={!isWithinWindow()}
+                disabled={!canStartTest(paper)}
                 onClick={handleStart}
               >
-                Start Test
+                {getExamStatus(paper) === 'UPCOMING'
+                  ? 'Test Not Started Yet'
+                  : getExamStatus(paper) === 'ENDED'
+                  ? 'Test Ended'
+                  : 'Start Test'}
               </Button>
             )}
+
+
 
             {paper.isAttempted && (
               <Button

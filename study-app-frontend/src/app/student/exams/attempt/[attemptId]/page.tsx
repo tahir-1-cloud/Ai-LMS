@@ -31,7 +31,7 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
       Modal.error({
         title: 'Invalid Attempt URL',
         content: 'Attempt id missing or invalid in the URL. Please open the correct attempt link.',
-        onOk: () => router.replace('/student/tests'),
+        onOk: () => router.replace('/student/exams/listing'),
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -130,7 +130,7 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
         loadedRef.current = true;
       } catch (err) {
         console.error('[ATTEMPT] load failed', err);
-        Modal.error({ title: 'Unable to load attempt', content: String(err), onOk: () => router.replace('/student/tests') });
+        Modal.error({ title: 'Unable to load attempt', content: String(err), onOk: () => router.replace('/student/exams/listing') });
       } finally {
         if (mounted) setLoading(false);
       }
@@ -163,7 +163,7 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
           const resp = await connection.invoke('JoinAttempt', attemptId, studentId);
           console.log('[ATTEMPT] JoinAttempt resp', resp);
           if (resp === false || (resp && typeof resp === 'object' && resp.ok === false)) {
-            Modal.error({ title: 'Cannot join', content: 'Another active session exists for this attempt.', onOk: () => router.replace('/student/tests') });
+            Modal.error({ title: 'Cannot join', content: 'Another active session exists for this attempt.', onOk: () => router.replace('/student/exams/listing') });
             return;
           }
           heartbeatRef.current = window.setInterval(() => {
@@ -180,7 +180,7 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
     connection.on('ForceDisconnect', (msg: string) => {
       message.warning(msg || 'Disconnected by server');
       cleanup();
-      router.replace('/student/tests');
+      router.replace('/student/exams/listing');
     });
 
     return () => cleanup();

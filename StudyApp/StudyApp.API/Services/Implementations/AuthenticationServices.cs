@@ -76,53 +76,51 @@ namespace StudyApp.API.Services.Implementations
 
         public async Task<LoginResponse> LoginStudent(LoginModel student)
         {
-            if(string.IsNullOrWhiteSpace(student.UserName))
-            {
+            if (string.IsNullOrWhiteSpace(student.UserName))
                 throw new Exception("At least one of CNIC, Email Address, or Phone Number is required.");
-            }
 
             if (string.IsNullOrWhiteSpace(student.Password))
-            {
                 throw new Exception("Password is required");
-            }
 
-            ApplicationUser? applicationUser = await _userRepository.FindUserByUserNameAsync(
-                student.UserName
-            );
+            ApplicationUser? applicationUser =
+                await _userRepository.FindUserByUserNameAsync(student.UserName);
 
-            if (applicationUser == null) 
-            {
+            if (applicationUser == null)
                 throw new Exception("Invalid Credentials");
-            }
 
             if (applicationUser.IsBlocked)
-            {
                 throw new Exception("Please contact administration office");
-            }
 
             if (!applicationUser.Password.Equals(student.Password))
-            {
                 throw new Exception("Invalid Credentials");
-            }
 
-            List<UserLogin> activeSessions = await _userLoginRepository.GetCurrentActiveSessionAsync(applicationUser.Id);
+            List<UserLogin> activeSessions =
+                await _userLoginRepository.GetCurrentActiveSessionAsync(applicationUser.Id);
 
             if (activeSessions.Count >= 2)
             {
-                throw new Exception("Maximum number of sessions reached.");
+                var sessionsToEnd = activeSessions
+                    .OrderByDescending(s => s.ExpiresAt)
+                    .Skip(1)
+                    .ToList();
+
+                foreach (var oldSession in sessionsToEnd)
+                {
+                    oldSession.ExpiresAt = DateTime.UtcNow;
+                    await _userLoginRepository.UpdateAsync(oldSession);
+                }
             }
 
             string token = Guid.NewGuid().ToString();
 
-            // Save session
-            var session = new UserLogin
+            var newSession = new UserLogin
             {
                 UserId = applicationUser.Id,
                 Token = token,
                 ExpiresAt = DateTime.UtcNow.AddMinutes(30),
             };
 
-            await _userLoginRepository.AddAsync(session);
+            await _userLoginRepository.AddAsync(newSession);
 
             return new LoginResponse
             {
@@ -131,5 +129,6 @@ namespace StudyApp.API.Services.Implementations
                 Token = token,
             };
         }
+
     }
 }

@@ -20,14 +20,25 @@ namespace StudyApp.API.Services.Implementations
 
         public async Task AddPaper(CreatePaperModel request)
         {
+            var utcDate = DateTime.SpecifyKind(
+                request.TestConductionDate,
+                DateTimeKind.Utc
+            );
+
+            if (utcDate < DateTime.UtcNow)
+            {
+                throw new InvalidOperationException("Test date cannot be in the past.");
+            }
+
             Paper paper = new Paper
             {
                 Title = request.Title,
-                TestConductedOn = request.TestConductionDate
+                TestConductedOn = utcDate
             };
 
             await _papersRepository.AddAsync(paper);
         }
+
 
         public async Task<IEnumerable<PaperModel>> GetPapers()
         {
@@ -131,35 +142,52 @@ namespace StudyApp.API.Services.Implementations
         //}
         public async Task<StartAttemptResponse> StartAttempt(StartAttemptModel model)
         {
-            if (model == null) throw new ArgumentNullException(nameof(model));
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
 
             var paper = await _papersRepository.GetPaperWithQuestions(model.PaperId);
             if (paper == null)
-                throw new Exception("Paper not found");
+                throw new Exception("Paper not found.");
 
-            var isAssigned = await _papersRepository.IsPaperAssignedToAnySession(model.PaperId);
+            var isAssigned = await _papersRepository
+                .IsPaperAssignedToAnySession(model.PaperId);
+
             if (!isAssigned)
-                throw new Exception("Paper is not assigned to any session");
+                throw new Exception("Paper is not assigned to any session.");
 
-            var existing = await _papersRepository.GetInProgressAttempt(model.PaperId, model.StudentId);
-            if (existing != null)
+            var nowUtc = DateTime.UtcNow;
+
+            if (paper.TestConductedOn > nowUtc)
+                throw new Exception("This test has not started yet.");
+
+            var examEndTime = paper.TestConductedOn.AddMinutes(paper.DurationMinutes);
+
+            if (nowUtc > examEndTime)
+                throw new Exception("This test has already ended.");
+
+            var existingInProgress = await _papersRepository
+                .GetInProgressAttempt(model.PaperId, model.StudentId);
+
+            if (existingInProgress != null)
             {
-                return new StartAttemptResponse { AttemptId = existing.Id };
+                return new StartAttemptResponse
+                {
+                    AttemptId = existingInProgress.Id
+                };
             }
+            var completedAttempt = await _papersRepository
+                .GetCompletedAttempt(model.PaperId, model.StudentId);
 
-            var completed = await _papersRepository.GetCompletedAttempt(model.PaperId, model.StudentId);
-            if (completed != null)
+            if (completedAttempt != null)
                 throw new Exception("You have already completed this test.");
-
-             
 
             var newAttempt = new StudentAttempt
             {
                 PaperId = model.PaperId,
                 StudentId = model.StudentId,
                 Status = "InProgress",
-                AttemptedOn = DateTime.UtcNow,
-                StartedAt = DateTime.UtcNow
+                AttemptedOn = nowUtc,
+                StartedAt = nowUtc
             };
 
             try
@@ -168,19 +196,32 @@ namespace StudyApp.API.Services.Implementations
             }
             catch (DbUpdateException)
             {
-                var concurrentAttempt = await _papersRepository.GetInProgressAttempt(model.PaperId, model.StudentId);
-                if (concurrentAttempt != null)
-                    return new StartAttemptResponse { AttemptId = concurrentAttempt.Id };
+                var concurrentAttempt = await _papersRepository
+                    .GetInProgressAttempt(model.PaperId, model.StudentId);
 
-                var completedAttempt = await _papersRepository.GetCompletedAttempt(model.PaperId, model.StudentId);
-                if (completedAttempt != null)
+                if (concurrentAttempt != null)
+                {
+                    return new StartAttemptResponse
+                    {
+                        AttemptId = concurrentAttempt.Id
+                    };
+                }
+
+                var completedAfterRace = await _papersRepository
+                    .GetCompletedAttempt(model.PaperId, model.StudentId);
+
+                if (completedAfterRace != null)
                     throw new Exception("You have already completed this test.");
 
                 throw;
             }
 
-            return new StartAttemptResponse { AttemptId = newAttempt.Id };
+            return new StartAttemptResponse
+            {
+                AttemptId = newAttempt.Id
+            };
         }
+
 
 
         public async Task<StudentAttemptDto?> GetAttemptById(int attemptId)
@@ -188,9 +229,9 @@ namespace StudyApp.API.Services.Implementations
             return await _papersRepository.GetAttemptById(attemptId);
         }
 
-        public async Task<StudentPaperDto?> GetStudentPaperAsync(int paperId)
+        public async Task<StudentPaperDto?> GetStudentPaperAsync(int paperId,int studentId)
         {
-            var paper = await _papersRepository.GetStudentPaperAsync(paperId);
+            var paper = await _papersRepository.GetStudentPaperAsync(paperId,studentId);
             return paper;
         }
 

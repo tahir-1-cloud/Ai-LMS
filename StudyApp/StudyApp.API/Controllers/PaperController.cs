@@ -51,7 +51,8 @@ namespace StudyApp.API.Controllers
         {
             try
             {
-                StudentPaperDto? dto = await _paperServices.GetStudentPaperAsync(paperId);
+                int studentId = 3; // TEMP (replace with auth later)
+                StudentPaperDto? dto = await _paperServices.GetStudentPaperAsync(paperId,studentId);
                 if (dto == null) return NotFound($"Paper with id {paperId} not found.");
                 return Ok(dto);
             }
