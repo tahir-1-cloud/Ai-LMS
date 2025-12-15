@@ -109,9 +109,11 @@
 
 // Program.cs
 using CloudinaryDotNet;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using StudyApp.API.Cloudinary;
 using StudyApp.API.Data;
 using StudyApp.API.Domain.Interfaces;
@@ -120,6 +122,7 @@ using StudyApp.API.Mappings;
 using StudyApp.API.Repositories;
 using StudyApp.API.Services.Implementations;
 using StudyApp.API.Services.Interfaces;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -195,6 +198,25 @@ builder.Services.AddScoped<IStudentLectureService, StudentLectureService>();
 // Mapster config
 MappingConfig.RegisterMappings();
 
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
+        )
+    };
+});
+
+
 // Add CORS services
 builder.Services.AddCors(options =>
 {
@@ -244,7 +266,8 @@ app.UseRouting();
 app.UseCors("StudyApp");
 
 // If you use authentication, enable it here (uncomment and ensure services are configured)
-// app.UseAuthentication();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 

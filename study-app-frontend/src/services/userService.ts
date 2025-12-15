@@ -4,6 +4,12 @@ import {Student} from "@/types/student";
 
 export const loginStudent = async (data: LoginModel): Promise<LoginResponse> => {
     const response = await axiosInstance.post<LoginResponse>(`/Authentication/LoginStudent`, data);
+    //for save token
+    const token = response.data.token;
+    if (!token) {
+    throw new Error("Token not received from server");
+    }
+    localStorage.setItem("token", token);
     return response.data;
 };
 

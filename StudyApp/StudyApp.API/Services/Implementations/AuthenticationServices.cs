@@ -1,11 +1,16 @@
 ﻿using Azure.Core;
+using CloudinaryDotNet.Actions;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using StudyApp.API.Domain.Entities;
 using StudyApp.API.Domain.Enums;
 using StudyApp.API.Domain.Interfaces;
 using StudyApp.API.Models;
 using StudyApp.API.Services.Interfaces;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace StudyApp.API.Services.Implementations
 {
@@ -13,11 +18,14 @@ namespace StudyApp.API.Services.Implementations
     {
         private readonly IApplicationUserRepository _userRepository;
         private readonly IUserLoginRepository _userLoginRepository;
+        private readonly IConfiguration _config;
 
-        public AuthenticationServices(IApplicationUserRepository userRepository, IUserLoginRepository userLoginRepository)
+        public AuthenticationServices(IApplicationUserRepository userRepository, IUserLoginRepository userLoginRepository, IConfiguration config)
         {
             _userRepository = userRepository;
             _userLoginRepository = userLoginRepository;
+            _config = config;
+
         }
 
         public async Task<CreateApplicationUserModel> AddNewStudent(CreateApplicationUserModel student)
@@ -74,6 +82,9 @@ namespace StudyApp.API.Services.Implementations
             return enumerable.Adapt<IEnumerable<ApplicationUserModel>>();
         }
 
+
+     
+
         public async Task<LoginResponse> LoginStudent(LoginModel student)
         {
             if (string.IsNullOrWhiteSpace(student.UserName))
@@ -111,13 +122,16 @@ namespace StudyApp.API.Services.Implementations
                 }
             }
 
-            string token = Guid.NewGuid().ToString();
+            string token = GenerateJwtToken(applicationUser);
 
-            var newSession = new UserLogin
+            int expireMinutes = int.Parse(_config["Jwt:ExpireMinutes"]);
+            var expiresAt = DateTime.UtcNow.AddMinutes(expireMinutes);
+            // Save session
+            var session = new UserLogin
             {
                 UserId = applicationUser.Id,
                 Token = token,
-                ExpiresAt = DateTime.UtcNow.AddMinutes(30),
+                ExpiresAt = expiresAt
             };
 
             await _userLoginRepository.AddAsync(newSession);
@@ -129,6 +143,38 @@ namespace StudyApp.API.Services.Implementations
                 Token = token,
             };
         }
+
+        
+
+        private string GenerateJwtToken(ApplicationUser applicationUser)
+        {
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_config["Jwt:Key"])
+            );
+
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                    new Claim(JwtRegisteredClaimNames.Sub, applicationUser.Id.ToString()),
+                    new Claim("fullName", applicationUser.FullName),
+                    new Claim("session", applicationUser.Session.Title),
+                    new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, applicationUser.Id.ToString())
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(
+                    int.Parse(_config["Jwt:ExpireMinutes"])),
+
+                signingCredentials: credentials);
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
 
     }
 }

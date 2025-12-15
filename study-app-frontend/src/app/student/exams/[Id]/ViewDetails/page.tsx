@@ -1,5 +1,4 @@
-'use client';
-
+"use client";
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -65,6 +64,7 @@ function getExamStatus(paper: StudentPaperDto) {
 
 
 export default function ViewDetailsPage({
+ 
   params,
 }: {
   params: { Id: string };

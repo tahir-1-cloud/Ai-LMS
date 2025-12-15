@@ -23,6 +23,8 @@ export default function LoginInForm() {
     e.preventDefault();
     try {
       if (username === "admin" && password === "12345") {
+        localStorage.setItem("username", username);
+        localStorage.setItem("password", password);
         router.replace("/admin/dashboard");
         return;
       }

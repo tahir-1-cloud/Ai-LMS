@@ -8,4 +8,5 @@ export interface LoginModel {
 export interface LoginResponse {
     fullName: string;
     session: string;
+    token:string;
 }
