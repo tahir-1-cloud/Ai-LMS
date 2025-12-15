@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation';
 export default function AddPaperForm() {
   const [title, setTitle] = useState('');
   const [testDateTime, setTestDateTime] = useState('');
-  const [durationMinutes, setDurationMinutes] = useState(40);
+  const [durationMinutes, setDurationMinutes] = useState<number | ''>(30);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
@@ -30,10 +30,11 @@ export default function AddPaperForm() {
       return;
     }
 
-    if (durationMinutes <= 0) {
-      toast.error('Duration must be greater than 0 minutes');
+    if (!durationMinutes || durationMinutes < 1) {
+      toast.error('Duration must be at least 1 minute');
       return;
     }
+
 
     const paper: CreatePaperModel = {
       title: title.trim(),
@@ -96,9 +97,21 @@ export default function AddPaperForm() {
               min={1}
               step={1}
               value={durationMinutes}
-              onChange={(e) =>
-                setDurationMinutes(Number(e.target.value))
-              }
+              onChange={(e) => {
+                const val = e.target.value;
+
+                // allow empty input
+                if (val === '') {
+                  setDurationMinutes('');
+                  return;
+                }
+
+                const num = Number(val);
+
+                if (num >= 1) {
+                  setDurationMinutes(num);
+                }
+              }}
               placeholder="e.g. 40"
               required
             />
