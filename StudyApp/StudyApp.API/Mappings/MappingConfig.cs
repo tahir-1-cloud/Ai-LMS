@@ -1,5 +1,6 @@
 ﻿using Mapster;
 using StudyApp.API.Domain.Entities;
+using StudyApp.API.Dto;
 using StudyApp.API.Models;
 
 namespace StudyApp.API.Mappings
@@ -39,8 +40,8 @@ namespace StudyApp.API.Mappings
             TypeAdapterConfig<MockOption, MockQuestionModel>.NewConfig()
              .TwoWays();
 
-          //  TypeAdapterConfig<Lecturedetails, LectureDetailsModel>.NewConfig()
-          //.TwoWays();
+            TypeAdapterConfig<Lecturedetails, LectureDetailsResponseDto>.NewConfig()
+           .TwoWays();
         }
     }
 }

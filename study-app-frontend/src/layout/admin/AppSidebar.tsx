@@ -56,6 +56,16 @@ const navItems: NavItem[] = [
     },
      {
         icon: <ClipboardIcon className="w-5 h-5"/>,
+        name: "Students Lectures",
+        subItems: [
+            {
+                name: "Add Lectures ", path: "/admin/studentlectures/add", pro: false
+            }
+           
+        ],
+    },
+     {
+        icon: <ClipboardIcon className="w-5 h-5"/>,
         name: "Mock Paper",
         subItems: [
             {

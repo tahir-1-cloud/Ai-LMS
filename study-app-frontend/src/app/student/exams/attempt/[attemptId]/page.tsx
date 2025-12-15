@@ -24,6 +24,15 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
   const rawId = resolvedParams?.attemptId;
   const attemptId = rawId ? Number(rawId) : NaN;
 
+//   export default function AttemptRunner({
+//   params,
+// }: {
+//   params: Promise<{ attemptId?: string }>;
+// }) {
+//   const { attemptId: rawId } = React.use(params); // ✅ THE ONLY CORRECT WAY
+//   const attemptId = rawId ? Number(rawId) : NaN;
+
+
   const router = useRouter();
 
   useEffect(() => {

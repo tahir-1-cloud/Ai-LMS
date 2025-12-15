@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using StudyApp.API.Dto;
 using StudyApp.API.Models;
+using StudyApp.API.Services.Implementations;
 using StudyApp.API.Services.Interfaces;
 
 namespace StudyApp.API.Controllers
@@ -31,6 +33,20 @@ namespace StudyApp.API.Controllers
             catch (Exception ex)
             {
                 return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllLectures()
+        {
+            try
+            {
+               var  lecture = await _studentLectureService.GetAllLectures();
+                return Ok(lecture);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
     }

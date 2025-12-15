@@ -1,10 +1,12 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using Mapster;
 using StudyApp.API.Cloudinary;
 using StudyApp.API.Domain.Entities;
 using StudyApp.API.Domain.Interfaces;
 using StudyApp.API.Dto;
 using StudyApp.API.Models;
+using StudyApp.API.Repositories;
 using StudyApp.API.Services.Interfaces;
 
 namespace StudyApp.API.Services.Implementations
@@ -86,6 +88,14 @@ namespace StudyApp.API.Services.Implementations
             return uploadResult.SecureUrl?.ToString();
         }
 
+        //Get Lectures Service
+
+        public async Task<IEnumerable<LectureDetailsResponseDto>> GetAllLectures()
+        {
+            IEnumerable<Lecturedetails> entities = await _StudentLectureRepository.GetAsync();
+            var dtos = entities.Adapt<IEnumerable<LectureDetailsResponseDto>>();
+            return dtos;
+        }
 
     }
 }
