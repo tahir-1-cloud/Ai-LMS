@@ -33,7 +33,8 @@ namespace StudyApp.API.Services.Implementations
             Paper paper = new Paper
             {
                 Title = request.Title,
-                TestConductedOn = utcDate
+                TestConductedOn = utcDate,
+                DurationMinutes = request.DurationMinutes
             };
 
             await _papersRepository.AddAsync(paper);

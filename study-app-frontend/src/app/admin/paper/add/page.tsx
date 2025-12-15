@@ -11,33 +11,49 @@ import Input from '@/components/form/input/InputField';
 
 export default function AddPaperForm() {
   const [title, setTitle] = useState('');
-  const [testDateTime, setTestDateTime] = useState<string>('');
+  const [testDateTime, setTestDateTime] = useState('');
+  const [durationMinutes, setDurationMinutes] = useState(40);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!title || !testDateTime) {
-      toast.error('Please enter a title and select date & time');
+    if (!title.trim()) {
+      toast.error('Title is required');
+      return;
+    }
+
+    if (!testDateTime) {
+      toast.error('Please select test date & time');
+      return;
+    }
+
+    if (durationMinutes <= 0) {
+      toast.error('Duration must be greater than 0 minutes');
       return;
     }
 
     const paper: CreatePaperModel = {
-      title,
+      title: title.trim(),
       testConductionDate: new Date(
         new Date(testDateTime).getTime() -
-        new Date().getTimezoneOffset() * 60000
+          new Date().getTimezoneOffset() * 60000
       ),
+      durationMinutes,
     };
 
-
     try {
+      setIsSubmitting(true);
       await addPaper(paper);
-      toast.success('Paper added successfully!');
+      toast.success('Paper added successfully');
 
       setTitle('');
       setTestDateTime('');
+      setDurationMinutes(40);
     } catch (error: unknown) {
-      toast.error((error as Error)?.message || 'Something went wrong.');
+      toast.error((error as Error)?.message || 'Something went wrong');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -45,6 +61,7 @@ export default function AddPaperForm() {
     <div className="grid grid-cols-1">
       <form onSubmit={handleSubmit} className="space-y-6">
         <ComponentCard title="Add Paper">
+
           {/* Title */}
           <div>
             <Label>Title</Label>
@@ -52,17 +69,35 @@ export default function AddPaperForm() {
               type="text"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Enter paper title..."
+              placeholder="Enter paper title"
+              required
             />
           </div>
 
-          {/* Date + Time */}
+          {/* Test Date & Time */}
           <div>
             <Label>Test Date & Time</Label>
             <Input
               type="datetime-local"
               value={testDateTime}
               onChange={(e) => setTestDateTime(e.target.value)}
+              required
+            />
+          </div>
+
+          {/* Duration */}
+          <div>
+            <Label>Test Duration (minutes)</Label>
+            <Input
+              type="number"
+              min={1}
+              step={1}
+              value={durationMinutes}
+              onChange={(e) =>
+                setDurationMinutes(Number(e.target.value))
+              }
+              placeholder="e.g. 40"
+              required
             />
           </div>
 
@@ -70,11 +105,13 @@ export default function AddPaperForm() {
           <div>
             <button
               type="submit"
-              className="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 sm:w-auto"
+              disabled={isSubmitting}
+              className="flex w-full justify-center rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-medium text-white hover:bg-brand-600 disabled:opacity-50 sm:w-auto"
             >
-              Add Paper
+              {isSubmitting ? 'Adding...' : 'Add Paper'}
             </button>
           </div>
+
         </ComponentCard>
       </form>
     </div>

@@ -4,6 +4,7 @@
     {
         public string Title { get; set; } = string.Empty;
         public DateTime TestConductionDate { get; set; }
+        public int DurationMinutes { get; set; }
     }
 
     public class AdminAttemptListDto

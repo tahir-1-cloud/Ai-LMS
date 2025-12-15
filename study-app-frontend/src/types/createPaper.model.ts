@@ -1,7 +1,9 @@
 export interface CreatePaperModel {
-    title: string;
-    testConductionDate: Date;
+  title: string;
+  testConductionDate: Date;
+  durationMinutes: number;
 }
+
 
 export interface PaperModel {
     id: number; // From AuditEntity
