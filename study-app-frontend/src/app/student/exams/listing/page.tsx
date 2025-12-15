@@ -111,9 +111,11 @@ export default function StudentAssignedTestsPage() {
   };
 
   function canStartTest(r: AssignedPaperDto) {
-    if (r.isAttempted) return false;
-    return getExamStatus(r) === 'LIVE';
-  }
+  const att = getAttemptForPaper(r.id);
+  if (att) return false;
+  return getExamStatus(r) === 'LIVE';
+}
+
 
   const getAttemptForPaper = (paperId: number) =>
     attempts.find(a => Number(a.paperId) === Number(paperId)) ?? null;
@@ -182,30 +184,35 @@ export default function StudentAssignedTestsPage() {
     },
 
     {
-      title: 'Status',
-      render: (_, r) => {
-        if (r.isAttempted) return <Tag color="success">Completed</Tag>;
+        title: 'Status',
+        render: (_, r) => {
+          const att = getAttemptForPaper(r.id);
 
-        const att = getAttemptForPaper(r.id);
-        if (att?.status === 'InProgress')
-          return <Tag color="orange">Submitted</Tag>;
+          // ✅ ATTEMPT-BASED STATUS FIRST
+          if (att?.status === 'Completed')
+            return <Tag color="success">Completed</Tag>;
 
-        const status = getExamStatus(r);
-        if (status === 'LIVE') return <Tag color="green">Live</Tag>;
-        if (status === 'UPCOMING') return <Tag color="blue">Upcoming</Tag>;
-        if (status === 'ENDED') return <Tag color="red">Ended</Tag>;
+          if (att?.status === 'InProgress')
+            return <Tag color="orange">In Progress</Tag>;
 
-        return <Tag>Unknown</Tag>;
+          // ⏱ EXAM WINDOW STATUS
+          const status = getExamStatus(r);
+          if (status === 'LIVE') return <Tag color="green">Live</Tag>;
+          if (status === 'UPCOMING') return <Tag color="blue">Upcoming</Tag>;
+          if (status === 'ENDED') return <Tag color="red">Ended</Tag>;
+
+          return <Tag>Unknown</Tag>;
+        },
       },
-    },
+
 
     {
       title: 'Action',
-      render: (_, r) => {
+        render: (_, r) => {
         const att = getAttemptForPaper(r.id);
 
         // ✅ COMPLETED
-        if (r.isAttempted && att) {
+        if (att?.status === 'Completed') {
           return (
             <Space>
               <Link href={`/student/exams/results/${att.id}`}>
@@ -219,20 +226,17 @@ export default function StudentAssignedTestsPage() {
           );
         }
 
-        // ⛔ IN-PROGRESS (AUTO-SUBMITTED)
+        // ⛔ IN PROGRESS → DO NOT ALLOW RESTART
         if (att?.status === 'InProgress') {
           return (
             <Space>
-              <Tag color="orange">Submitted</Tag>
-
-              <Link href={`/student/exams/${r.id}/ViewDetails`}>
-                <Button>Details</Button>
-              </Link>
+              <Tag color="orange">In Progress</Tag>
+              <Button disabled>Start</Button>
             </Space>
           );
         }
 
-        // 🟢 NEVER ATTEMPTED
+        // 🟢 NO ATTEMPT EXISTS → ALLOW START IF LIVE
         return (
           <Space>
             <Button

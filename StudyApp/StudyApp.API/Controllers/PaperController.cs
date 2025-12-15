@@ -170,6 +170,10 @@ namespace StudyApp.API.Controllers
             try
             {
                 //studentId = 3;
+                studentId = int.Parse(
+                            User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                            ?? throw new UnauthorizedAccessException("User id not found in token")
+                        );
                 var attempts = await _paperServices.GetAttemptsForStudent(studentId);
                 return Ok(attempts);
             }
@@ -235,7 +239,7 @@ namespace StudyApp.API.Controllers
                             ?? throw new UnauthorizedAccessException("User id not found in token")
                         );
                 //studentId = 3; //temp hardcode for testing
-                await _service.SaveAnswerAsync(model, 1);
+                await _service.SaveAnswerAsync(model, studentId);
                 return Ok();
             }
             catch (System.Exception ex)
@@ -255,7 +259,7 @@ namespace StudyApp.API.Controllers
                             ?? throw new UnauthorizedAccessException("User id not found in token")
                         );
                 //studentId = 3; //temp hardcode for testing
-                await _service.CompleteAttemptAsync(model, 1);
+                await _service.CompleteAttemptAsync(model, studentId);
                 return Ok();
             }
             catch (System.Exception ex)
@@ -275,7 +279,7 @@ namespace StudyApp.API.Controllers
                             ?? throw new UnauthorizedAccessException("User id not found in token")
                         );
                 //studentId = 3; //temp hardcode for testing
-                var result = await _service.GetAttemptResultAsync(attemptId, 1);
+                var result = await _service.GetAttemptResultAsync(attemptId, studentId);
                 if (result == null) return NotFound();
                 return Ok(result);
             }
