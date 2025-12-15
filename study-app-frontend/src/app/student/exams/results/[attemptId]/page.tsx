@@ -187,7 +187,14 @@ export default function AttemptResults({
                   <strong>Attempted On:</strong>
                   <div>
                     {result.attemptedOn
-                      ? new Date(result.attemptedOn).toLocaleString()
+                      ? new Date(result.attemptedOn).toLocaleString('en-PK', {
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true,
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                        })
                       : '—'}
                   </div>
                 </div>
