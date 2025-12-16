@@ -76,6 +76,6 @@ export interface MockTestResultDetail {
     incorrect: number;
     total: number;
     percentage: number;
-    attemptDate: string;
+    attemptDate: Date;
     details: MockTestAnswerDetail[];
 }

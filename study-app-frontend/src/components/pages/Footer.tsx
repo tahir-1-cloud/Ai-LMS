@@ -67,7 +67,7 @@ const Footer = () => {
       {/* Bottom Bar */}
       <div className="bg-blue-800 mt-10 py-4 text-center text-sm border-t border-blue-600">
         <p>© {new Date().getFullYear()} <span className="text-yellow-300 font-semibold">JUNOON MDCAT</span>. All rights reserved.</p>
-        <p className="mt-1">Made with ❤️ by <span className="font-semibold">M. Tahir</span></p>
+        {/* <p className="mt-1">Made with ❤️ by <span className="font-semibold">M. Tahir</span></p> */}
       </div>
     </footer>
   )

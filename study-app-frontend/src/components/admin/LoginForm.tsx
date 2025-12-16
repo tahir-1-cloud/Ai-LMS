@@ -90,9 +90,9 @@ export default function LoginInForm() {
                 <Checkbox checked={isChecked} onChange={setIsChecked} />
                 <span className="text-sm text-gray-800">Keep me logged in</span>
               </div>
-              <Link href="/reset-password" className="text-sm text-blue-700 hover:text-blue-800">
+              {/* <Link href="/reset-password" className="text-sm text-blue-700 hover:text-blue-800">
                 Forgot Password?
-              </Link>
+              </Link> */}
             </div>
 
             <Button className="w-full bg-blue-700 hover:bg-blue-800 text-white font-medium py-3 rounded-xl shadow-lg">
