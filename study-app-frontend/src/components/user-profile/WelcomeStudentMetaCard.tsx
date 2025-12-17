@@ -55,10 +55,10 @@ export default function WelcomeStudentMetaCard({ user }: WelcomeStudentMetaCardP
         {/* Right: Illustration */}
         <div className="w-full lg:w-1/3 flex justify-center lg:justify-end">
           <Image
-            src="/images/Landingpage/stdboard1.jpg"
+            src="/images/Landingpage/mdcatddashbord.jpeg"
             alt="Junoon MDCAT Student Dashboard"
-            width={320}
-            height={240}
+            width={400}
+            height={320}
             className="object-contain"
             priority
           />
