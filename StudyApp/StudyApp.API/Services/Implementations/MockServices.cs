@@ -42,5 +42,10 @@ namespace StudyApp.API.Services.Implementations
         {
             return await _mockRepository.GetMockTestWithQuestionsAsync(id);
         }
+
+        public async Task DeleteMockTest(int mockId)
+        {
+            await _mockRepository.DeleteMockTestAsync(mockId);
+        }
     }
 }

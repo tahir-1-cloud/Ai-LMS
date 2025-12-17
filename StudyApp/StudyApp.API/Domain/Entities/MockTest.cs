@@ -8,5 +8,8 @@
         // Enable lazy loading
         public virtual ICollection<MockQuestion> MockQuestions { get; set; } = new List<MockQuestion>();
 
+        public virtual ICollection<TestResult> TestResults { get; set; } = new List<TestResult>();
+
+
     }
 }
