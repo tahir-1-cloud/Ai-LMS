@@ -138,6 +138,8 @@ namespace StudyApp.API.Services.Implementations
             {
                 FullName = applicationUser.FullName,
                 Session = applicationUser.Session.Title,
+                EmailAddress=applicationUser.EmailAddress,
+                CNIC=applicationUser.CNIC,
                 Token = token,
             };
         }
@@ -156,6 +158,8 @@ namespace StudyApp.API.Services.Implementations
             {
                         new Claim(ClaimTypes.NameIdentifier, applicationUser.Id.ToString()),
                         new Claim("fullName", applicationUser.FullName),
+                        new Claim("cnic", applicationUser.CNIC),
+                        new Claim("emailaddress", applicationUser.EmailAddress),
                         new Claim("session", applicationUser.Session.Title),
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };

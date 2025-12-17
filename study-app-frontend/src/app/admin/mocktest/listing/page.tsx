@@ -260,7 +260,7 @@ export default function Page() {
 
              <Popconfirm
             title="Delete paper?"
-            description="This will permanently delete the paper and all related data (questions, attempts, results). Are you sure?"
+            description="This will permanently delete the Mockpaper and all related data (questions, attempts, results). Are you sure?"
             onConfirm={() => handleDeleteMocktest(Number(mock.id))}
             okText="Delete"
             cancelText="Cancel"

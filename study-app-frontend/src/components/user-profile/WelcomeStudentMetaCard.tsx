@@ -1,42 +1,70 @@
 "use client";
+
 import React from "react";
 import Image from "next/image";
+import { JwtPayload } from "@/hooks/useStudentAuth";
 
+interface WelcomeStudentMetaCardProps {
+  user: JwtPayload;
+}
 
-export default function WelcomeStudentMetaCard() {
-    return (
-        <>
-            <div className="p-5 border border-gray-200 rounded-2xl dark:border-gray-800 lg:p-6">
-                <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-                    <div className="flex flex-col items-center w-full gap-6 xl:flex-row">
-                        <div
-                            className="w-20 h-20 overflow-hidden border border-gray-200 rounded-full dark:border-gray-800">
-                            <Image
-                                width={80}
-                                height={80}
-                                src="/images/user/owner.jpg"
-                                alt="user"
-                            />
-                        </div>
-                        <div className="order-3 xl:order-2">
-                            <h4 className="mb-2 text-lg font-semibold text-center text-gray-800 dark:text-white/90 xl:text-left">
-                                Musharof Chowdhury
-                            </h4>
-                            <div
-                                className="flex flex-col items-center gap-1 text-center xl:flex-row xl:gap-3 xl:text-left">
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Student
-                                </p>
-                                <div className="hidden h-3.5 w-px bg-gray-300 dark:bg-gray-700 xl:block"></div>
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    MDCAT Session 2025
-                                </p>
-                            </div>
-                        </div>
+export default function WelcomeStudentMetaCard({ user }: WelcomeStudentMetaCardProps) {
+  return (
+    <div className="p-8 rounded-2xl border border-gray-200 bg-white dark:bg-gray-900 dark:border-gray-800 shadow-sm font-[Poppins]">
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-10">
 
-                    </div>
-                </div>
-            </div>
-        </>
-    );
+        {/* Left: Content */}
+        <div className="w-full lg:w-2/3 text-center lg:text-left">
+          <h1 className="text-3xl font-extrabold text-black dark:text-white tracking-tight">
+            Welcome to{" "}
+            <span className="text-blue-600">JUNOON MDCAT</span>
+          </h1>
+
+          <p className="mt-4 text-lg font-medium text-black dark:text-gray-200">
+            Hello,{" "}
+            <span className="font-semibold text-blue-600">
+              {user.fullName}
+            </span>
+          </p>
+
+          <p className="mt-4 text-base text-gray-700 dark:text-gray-300 max-w-2xl leading-relaxed">
+            This is your dedicated learning dashboard designed for focused and
+            effective <strong className="text-black dark:text-white">MDCAT Entry Test</strong>{" "}
+            preparation. Track your progress, improve weak areas, and stay
+            consistent on your journey toward medical admission.
+          </p>
+
+          {/* Student Info */}
+          <div className="mt-6 space-y-2 text-base">
+            <p className="text-black dark:text-gray-200">
+              <span className="font-semibold text-blue-600">
+                Session:
+              </span>{" "}
+              {user.session}
+            </p>
+
+            <p className="text-black dark:text-gray-200">
+              <span className="font-semibold text-blue-600">
+                Registered Email:
+              </span>{" "}
+              {user.emailaddress}
+            </p>
+          </div>
+        </div>
+
+        {/* Right: Illustration */}
+        <div className="w-full lg:w-1/3 flex justify-center lg:justify-end">
+          <Image
+            src="/images/Landingpage/stdboard1.jpg"
+            alt="Junoon MDCAT Student Dashboard"
+            width={320}
+            height={240}
+            className="object-contain"
+            priority
+          />
+        </div>
+
+      </div>
+    </div>
+  );
 }

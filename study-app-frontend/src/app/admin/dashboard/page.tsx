@@ -7,12 +7,6 @@ import MonthlySalesChart from "@/components/admin/ecommerce/MonthlySalesChart";
 
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 
-// export const metadata: Metadata = {
-//     title:
-//         "Next.js E-commerce Dashboard | TailAdmin - Next.js Dashboard Template",
-//     description: "This is Next.js Home for TailAdmin Dashboard Template",
-// };
-
 export default function Ecommerce() {
     useAdminAuth();
     return (

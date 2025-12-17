@@ -15,13 +15,13 @@ import ComponentCard from "@/components/common/ComponentCard";
 import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 import DatePicker from '@/components/form/date-picker';
+import { useRouter } from 'next/navigation';
 
 export default function AddMockPaperForm() {
 
     const [title, setTitle] = useState('');
     const [testDate, setTestDate] = useState<Date>();
-    const [open, setOpen] = useState(false);
-
+     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -42,6 +42,7 @@ export default function AddMockPaperForm() {
             // Reset form
             setTitle('');
             setTestDate(undefined);
+            router.push('/admin/paper/listing');
         } catch (error: unknown) {
             const message =
                 (error as Error)?.message ||
