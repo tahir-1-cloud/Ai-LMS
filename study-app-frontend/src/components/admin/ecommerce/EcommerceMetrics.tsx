@@ -14,10 +14,10 @@ export const EcommerceMetrics = () => {
         <div className="flex items-end justify-between mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              Customers
+             Total Register Students
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              3,782
+              15
             </h4>
           </div>
           {/*<Badge color="success">*/}
@@ -36,11 +36,14 @@ export const EcommerceMetrics = () => {
         <div className="flex items-end justify-between mt-5">
           <div>
             <span className="text-sm text-gray-500 dark:text-gray-400">
-              Orders
+              Pending Student Registrations
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-              5,359
+              6
             </h4>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Submitted via website
+            </span>
           </div>
 
           {/*<Badge color="error">*/}

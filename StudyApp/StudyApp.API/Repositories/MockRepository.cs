@@ -6,7 +6,7 @@ using StudyApp.API.Dto;
 
 namespace StudyApp.API.Repositories
 {
-    public class MockRepository:BaseRepository<MockTest>, IMockRepository
+    public class MockRepository : BaseRepository<MockTest>, IMockRepository
     {
         public MockRepository(ApplicationDbContext context) : base(context)
         {
@@ -37,6 +37,21 @@ namespace StudyApp.API.Repositories
 
             return test;
 
+        }
+
+
+        public async Task DeleteMockTestAsync(int mockId)
+        {
+      
+            var mockTest = await _context.MockTests.FirstOrDefaultAsync(p => p.Id == mockId);
+
+            if (mockTest == null)
+            {
+                throw new KeyNotFoundException($"Mock paper with id {mockId} not found.");
+            }
+
+            _context.MockTests.Remove(mockTest);
+            await _context.SaveChangesAsync();
         }
     }
 }

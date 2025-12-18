@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
 
-interface JwtPayload {
+export interface JwtPayload {
   sub: string;       // user id
   fullName: string;  
   session: string;   
   exp: number;
+  cnic:string;
+  emailaddress:string;
 }
 
 export const useStudentAuth = () => {

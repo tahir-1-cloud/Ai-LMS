@@ -20,8 +20,10 @@ import { ColumnsType } from 'antd/es/table';
 import { Session } from '@/types/session';
 import {getAllMockPapers} from "@/services/mocktestService";
 import { mockQuestionService } from '@/services/mockQuestionService';
+import { deletemockPaper } from '@/services/mocktestService';
 import type { MockModel } from '@/types/mocktest';
 import type { MockQuestion } from '@/services/mockQuestionService';
+import { ExclamationCircleOutlined } from '@ant-design/icons';
 
 export default function Page() {
   const [papers, setPapers] = useState<MockModel[]>([]);
@@ -67,6 +69,24 @@ export default function Page() {
     setFilteredPapers(filtered);
   };
 
+
+   const refreshPapers = async () => {
+      setLoading(true);
+      try {
+        const data = await getAllMockPapers();
+        setPapers(data);
+        if (searchTerm && searchTerm.trim() !== '') {
+          handleSearch(searchTerm);
+        } else {
+          setFilteredPapers(data);
+        }
+      } catch (err) {
+        console.error('Failed to refresh Mockpapers', err);
+        message.error('Failed to refresh Mockpapers');
+      } finally {
+        setLoading(false);
+      }
+    };
   // tolerant helpers (normalize API shapes)
   function parseQuestionId(q: any): number | undefined {
     if (!q) return undefined;
@@ -88,6 +108,24 @@ export default function Page() {
     if (typeof value === 'number') return value === 1;
     return false;
   }
+
+    // delete paper (and related data) - backend must cascade
+    const handleDeleteMocktest = async (mockId: number | undefined) => {
+      if (mockId === undefined) {
+        message.error('Paper id not available');
+        return;
+      }
+  
+      try {
+        await deletemockPaper(mockId);
+        message.success('mock test deleted successfully  related questions.');
+        await refreshPapers();
+      } catch (err: any) {
+        console.error('Failed deleting Mocktest', err);
+        const msg = err?.response?.data ?? err?.message ?? 'Failed to delete Mocktest';
+        message.error(typeof msg === 'string' ? msg : 'Failed to delete Mocktest');
+      }
+    };
 
   const openQuestionsModal = async (mockpaper: MockModel) => {
     setModalPaper(mockpaper);
@@ -219,6 +257,20 @@ export default function Page() {
           >
             Show Questions
           </Button>
+
+             <Popconfirm
+            title="Delete paper?"
+            description="This will permanently delete the Mockpaper and all related data (questions, attempts, results). Are you sure?"
+            onConfirm={() => handleDeleteMocktest(Number(mock.id))}
+            okText="Delete"
+            cancelText="Cancel"
+            icon={<ExclamationCircleOutlined />}
+            getPopupContainer={() => document.body}
+          >
+            <Button danger type="primary" size="small" style={{ padding: '4px 10px', borderRadius: 20 }}>
+              Delete
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },

@@ -13,6 +13,6 @@ namespace StudyApp.API.Services.Interfaces
         Task<List<MockTestSummaryDto>> GetAllMockTestsAsync();
         Task<MockTest> GetMockTestWithQuestionsAsync(int id);
 
-
+        Task DeleteMockTest(int mockId);
     }
 }

@@ -82,6 +82,26 @@ namespace StudyApp.API.Controllers
             }
         }
 
+
+        [HttpDelete("{mockId}")]
+        public async Task<IActionResult> DeleteMockTest(int mockId)
+        {
+            try
+            {
+                await _mockServices.DeleteMockTest(mockId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                // log ex if you have logger
+                return BadRequest(ex.Message);
+            }
+        }
+
         //Add Options for Mock Questions
         [HttpPost]
         public async Task<IActionResult> AddMockOption([FromBody] CreateMockOptionModel createMockOptionModel)

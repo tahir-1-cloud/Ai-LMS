@@ -17,7 +17,7 @@ export default function StudentDashboard() {
                  </h3>
 
                 <div className="space-y-6">
-                    <WelcomeStudentMetaCard />
+                    <WelcomeStudentMetaCard  user={user}/>
                 </div>
             </div>
         </div>

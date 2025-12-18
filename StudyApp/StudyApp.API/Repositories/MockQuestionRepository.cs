@@ -34,15 +34,13 @@ namespace StudyApp.API.Repositories
             if (mockquestion == null)
                 throw new KeyNotFoundException($"Question with id {mockquestionId} not found.");
 
-            // Delete all child answers first
-            if (mockquestion.MockOptions != null && mockquestion.MockOptions.Any())
-            {
-                _context.MockOptions.RemoveRange(mockquestion.MockOptions);
-            }
+            // 1️⃣ Delete TestResultAnswers linked to this question
+            var answers = await _context.TestResultAnswers
+                .Where(a => a.QuestionId == mockquestionId)
+                .ToListAsync();
 
-            //bool hasAnswers = mockquestion.MockOptions.Any(o => _context.TestResultAnswers.Any(a => a.SelectedOptionId == o.Id));
-            //if (hasAnswers)
-            //    throw new KeyNotFoundException("Cannot delete question: some options have been used in test results. Delete those first..");
+            if (answers.Any())
+                _context.TestResultAnswers.RemoveRange(answers);
 
             // Delete main TestResult
             _context.MockQuestions.Remove(mockquestion);

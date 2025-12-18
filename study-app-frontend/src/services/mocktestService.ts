@@ -21,6 +21,20 @@ export const getAllMockPapers = async (): Promise<MockModel[]> => {
     return response.data;
 };
 
+
+export const deletemockPaper = async (mockId: number): Promise<void> => {
+    try {
+        await axiosInstance.delete(`/MockTest/DeleteMockTest/${mockId}`);
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            console.error("Error deleting mocktest:", error.response?.data || error.message);
+        } else {
+            console.error("Unexpected error deleting mocktest:", error);
+        }
+        throw error;
+    }
+};
+
 export const getAllMockResults = async (): Promise<MockTestResults[]> => {
     const response = await axiosInstance.get<MockTestResults[]>(`/MockTest/GetMockResults`);
     return response.data;

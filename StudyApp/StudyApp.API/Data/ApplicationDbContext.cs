@@ -154,6 +154,32 @@ namespace StudyApp.API.Data
                         .HasIndex(sl => new { sl.StudentId, sl.LecturedetailId })
                         .IsUnique();
 
+
+                    // =======================
+                    // MockTest cascade setup
+                    // =======================
+
+                    // MockTest -> MockQuestion
+                    modelBuilder.Entity<MockQuestion>()
+                        .HasOne(mq => mq.MockTest)
+                        .WithMany(mt => mt.MockQuestions)
+                        .HasForeignKey(mq => mq.MockTestId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    // MockQuestion -> MockOption
+                    modelBuilder.Entity<MockOption>()
+                        .HasOne(mo => mo.MockQuestion)
+                        .WithMany(mq => mq.MockOptions)
+                        .HasForeignKey(mo => mo.MockQuestionId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    // MockTest -> TestResult
+                    modelBuilder.Entity<TestResult>()
+                        .HasOne(tr => tr.MockTest)
+                        .WithMany(mt => mt.TestResults)
+                        .HasForeignKey(tr => tr.MockTestId)
+                        .OnDelete(DeleteBehavior.Cascade);
+
         }
 
 
