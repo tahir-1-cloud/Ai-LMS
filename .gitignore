@@ -6,7 +6,7 @@ bin/
 .idea/
 .next/
 node_modules/
-StudyApp/StudyApp.API/appsettings.json
-study-app-frontend/.env.local
-/study-app-frontend/.env.local
-/StudyApp/StudyApp.API/appsettings.json
+# StudyApp/StudyApp.API/appsettings.json
+# study-app-frontend/.env.local
+# /study-app-frontend/.env.local
+# /StudyApp/StudyApp.API/appsettings.json

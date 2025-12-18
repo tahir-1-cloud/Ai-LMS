@@ -222,10 +222,15 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("StudyApp", policy =>
     {
-        policy.WithOrigins("http://localhost:3000") // your Next.js frontend URL
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials(); // only if you're using cookies/auth
+        policy
+            .WithOrigins(
+                "https://junoonmdcat.com",
+                "https://www.junoonmdcat.com",
+                "http://localhost:3000" // keep for local dev
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
