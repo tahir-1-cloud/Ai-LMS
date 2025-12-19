@@ -10,3 +10,4 @@ node_modules/
 # study-app-frontend/.env.local
 # /study-app-frontend/.env.local
 # /StudyApp/StudyApp.API/appsettings.json
+/StudyApp/StudyApp.API/appsettings.json
