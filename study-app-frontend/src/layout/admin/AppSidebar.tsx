@@ -59,7 +59,10 @@ const navItems: NavItem[] = [
         name: "Students Lectures",
         subItems: [
             {
-                name: "Add Lectures ", path: "/admin/studentlectures/add", pro: false
+                name: "Add Lectures", path: "/admin/studentlectures/add", pro: false
+            },
+            {
+                name: "Lectures details", path: "/admin/studentlectures/list", pro: false
             }
            
         ],

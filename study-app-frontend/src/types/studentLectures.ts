@@ -10,6 +10,6 @@ export interface LectureDetailsResponseDto{
     title: string;
     description: string;
     thumbnailurl: string;
-    videourl: string;
+    videoUrl: string;
     createdAt?:Date;
 }
