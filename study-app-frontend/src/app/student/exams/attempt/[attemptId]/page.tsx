@@ -24,14 +24,6 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
   const rawId = resolvedParams?.attemptId;
   const attemptId = rawId ? Number(rawId) : NaN;
 
-//   export default function AttemptRunner({
-//   params,
-// }: {
-//   params: Promise<{ attemptId?: string }>;
-// }) {
-//   const { attemptId: rawId } = React.use(params); // ✅ THE ONLY CORRECT WAY
-//   const attemptId = rawId ? Number(rawId) : NaN;
-
 
   const router = useRouter();
 
@@ -67,13 +59,11 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
   const initialMoveDoneRef = useRef<boolean>(false);
 
 
-  // helper: try to parse server date, assume UTC if no timezone provided
-const parseServerDate = (s: string | undefined | null): Date | null => {
-  if (!s) return null;
+  const parseServerDate = (s: string | undefined | null): Date | null => {
+    if (!s) return null;
+    return new Date(s.endsWith('Z') ? s : s + 'Z');
+  };
 
-  // ✅ trust backend value as-is (local time)
-  return new Date(s);
-};
 
 
   // ---------- Load attempt ----------
@@ -110,10 +100,7 @@ useEffect(() => {
         String(data.status || '').toLowerCase().includes('inprogress');
       hasStartedRef.current = hasStarted;
 
-      // ⏱️ TIMER: use endsAt directly
       const endsAt = parseServerDate(data.endsAt);
-      console.log('[ATTEMPT] parsed endsAt=', data.endsAt, endsAt);
-
       if (endsAt) {
         const now = new Date();
         const secs = Math.max(
@@ -121,11 +108,8 @@ useEffect(() => {
           Math.floor((endsAt.getTime() - now.getTime()) / 1000)
         );
         setTimeLeftSec(secs);
-        console.log('[ATTEMPT] computed timeLeftSec=', secs);
       } else {
-        // no endsAt → no auto-submit
         setTimeLeftSec(null);
-        console.log('[ATTEMPT] no endsAt provided. Timer disabled.');
       }
 
       loadedRef.current = true;
@@ -531,7 +515,19 @@ useEffect(() => {
                   <Divider />
 
                   <Text strong>Started At:</Text>
-                  <div className="mb-2">{attempt.startedAt ? new Date(attempt.startedAt).toLocaleString() : '—'}</div>
+                  <div className="mb-2">
+                    {attempt.startedAt
+                      ? parseServerDate(attempt.startedAt)?.toLocaleString('en-PK', {
+                          timeZone: 'Asia/Karachi',
+                          day: '2-digit',
+                          month: 'long',
+                          year: 'numeric',
+                          hour: 'numeric',
+                          minute: '2-digit',
+                          hour12: true,
+                        })
+                      : '—'}
+                  </div>
 
                   <Text strong>Duration:</Text>
                   <div className="mb-2">{attempt.durationMinutes ? `${attempt.durationMinutes} minutes` : 'N/A'}</div>
