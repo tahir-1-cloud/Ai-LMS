@@ -517,20 +517,7 @@ useEffect(() => {
 
                   <Divider />
 
-                  <Text strong>Started At:</Text>
-                  <div className="mb-2">
-                    {attempt.startedAt
-                      ? parseServerDate(attempt.startedAt)?.toLocaleString('en-PK', {
-                          timeZone: 'Asia/Karachi',
-                          day: '2-digit',
-                          month: 'long',
-                          year: 'numeric',
-                          hour: 'numeric',
-                          minute: '2-digit',
-                          hour12: true,
-                        })
-                      : '—'}
-                  </div>
+                  
 
                   <Text strong>Duration:</Text>
                   <div className="mb-2">{attempt.durationMinutes ? `${attempt.durationMinutes} minutes` : 'N/A'}</div>
