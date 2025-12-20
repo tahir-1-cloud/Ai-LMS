@@ -61,8 +61,9 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
 
   const parseServerDate = (s: string | undefined | null): Date | null => {
     if (!s) return null;
-    return new Date(s.endsWith('Z') ? s : s + 'Z');
+    return new Date(s);
   };
+
 
 
 
