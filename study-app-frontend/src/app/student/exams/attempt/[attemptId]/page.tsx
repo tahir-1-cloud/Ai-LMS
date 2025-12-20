@@ -61,10 +61,12 @@ export default function AttemptRunner({ params }: { params: { attemptId?: string
 
   const parseServerDate = (s: string | undefined | null): Date | null => {
     if (!s) return null;
-    return new Date(s);
+
+    // Treat backend value as Pakistan time explicitly
+    return new Date(
+      new Date(s).toLocaleString('en-US', { timeZone: 'Asia/Karachi' })
+    );
   };
-
-
 
 
   // ---------- Load attempt ----------
