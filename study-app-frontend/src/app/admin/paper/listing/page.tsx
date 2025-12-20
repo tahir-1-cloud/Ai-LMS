@@ -304,18 +304,21 @@ export default function Page() {
       dataIndex: 'testConductedOn',
       key: 'testConductedOn',
       render: (d: string) => {
-        const date = new Date(d);
+        const date = new Date(d.endsWith('Z') ? d : d + 'Z'); // UTC from backend
+
         return (
           <div>
             <div className="font-medium">
-              {date.toLocaleDateString(undefined, {
+              {date.toLocaleDateString('en-PK', {
+                timeZone: 'Asia/Karachi',
                 day: '2-digit',
                 month: 'short',
                 year: 'numeric',
               })}
             </div>
             <div className="text-xs text-gray-500">
-              {date.toLocaleTimeString(undefined, {
+              {date.toLocaleTimeString('en-PK', {
+                timeZone: 'Asia/Karachi',
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: true,

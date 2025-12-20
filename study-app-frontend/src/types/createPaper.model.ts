@@ -1,6 +1,6 @@
 export interface CreatePaperModel {
   title: string;
-  testConductionDate: Date;
+  testConductionDate: string;
   durationMinutes: number;
 }
 

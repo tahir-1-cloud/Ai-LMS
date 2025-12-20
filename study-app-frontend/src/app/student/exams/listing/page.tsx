@@ -33,9 +33,10 @@ function getStudentId(): number {
 }
 
 function formatPakistaniDate(date?: string | null) {
-  if (!date) return '--';
+  const d = parseUtc(date);
+  if (!d) return '--';
 
-  return new Date(date).toLocaleString('en-PK', {
+  return d.toLocaleString('en-PK', {
     timeZone: 'Asia/Karachi',
     day: '2-digit',
     month: 'long',
@@ -45,13 +46,24 @@ function formatPakistaniDate(date?: string | null) {
     hour12: true,
   });
 }
+function parseUtc(date?: string | null): Date | null {
+  if (!date) return null;
+  return new Date(date.endsWith('Z') ? date : date + 'Z');
+}
+
 
 function getExamStatus(r: AssignedPaperDto) {
-  const now = new Date();
-  if (r.availableFrom && new Date(r.availableFrom) > now) return 'UPCOMING';
-  if (r.availableTo && new Date(r.availableTo) < now) return 'ENDED';
+  const now = new Date(); // local now is fine
+
+  const from = parseUtc(r.availableFrom);
+  const to = parseUtc(r.availableTo);
+
+  if (from && from > now) return 'UPCOMING';
+  if (to && to < now) return 'ENDED';
+
   return 'LIVE';
 }
+
 
 function getStatusPriority(r: AssignedPaperDto): number {
   if (r.isAttempted) return 4;
@@ -65,9 +77,10 @@ function getStatusPriority(r: AssignedPaperDto): number {
 }
 
 function safeDateValue(date?: string | null): number {
-  if (!date) return Number.MAX_SAFE_INTEGER;
-  return new Date(date).getTime();
+  const d = parseUtc(date);
+  return d ? d.getTime() : Number.MAX_SAFE_INTEGER;
 }
+
 
 /* ------------------ COMPONENT ------------------ */
 

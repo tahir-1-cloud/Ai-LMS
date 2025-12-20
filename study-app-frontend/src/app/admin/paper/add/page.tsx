@@ -38,12 +38,10 @@ export default function AddPaperForm() {
 
     const paper: CreatePaperModel = {
       title: title.trim(),
-      testConductionDate: new Date(
-        new Date(testDateTime).getTime() -
-          new Date().getTimezoneOffset() * 60000
-      ),
+      testConductionDate: new Date(testDateTime).toISOString(),
       durationMinutes,
     };
+
 
     try {
       setIsSubmitting(true);

@@ -23,9 +23,10 @@ function getStudentId(): number {
 }
 
 function formatPakistaniDate(dateString?: string | null): string {
-  if (!dateString) return 'TBD';
+  const d = parseUtc(dateString);
+  if (!d) return 'TBD';
 
-  return new Date(dateString).toLocaleString('en-PK', {
+  return d.toLocaleString('en-PK', {
     timeZone: 'Asia/Karachi',
     day: '2-digit',
     month: 'long',
@@ -36,10 +37,16 @@ function formatPakistaniDate(dateString?: string | null): string {
   });
 }
 
-function getExamWindow(paper: StudentPaperDto) {
-  if (!paper.testConductedOn) return null;
+function parseUtc(date?: string | null): Date | null {
+  if (!date) return null;
+  return new Date(date.endsWith('Z') ? date : date + 'Z');
+}
 
-  const start = new Date(paper.testConductedOn);
+
+function getExamWindow(paper: StudentPaperDto) {
+  const start = parseUtc(paper.testConductedOn);
+  if (!start) return null;
+
   const end = new Date(
     start.getTime() + (paper.durationMinutes ?? 0) * 60 * 1000
   );
@@ -47,15 +54,18 @@ function getExamWindow(paper: StudentPaperDto) {
   return { start, end };
 }
 
+
 function getExamStatus(paper: StudentPaperDto) {
   const window = getExamWindow(paper);
   if (!window) return 'UNKNOWN';
 
   const now = new Date();
+
   if (now < window.start) return 'UPCOMING';
   if (now > window.end) return 'ENDED';
   return 'LIVE';
 }
+
 
 export default function ViewDetailsPage({
  
