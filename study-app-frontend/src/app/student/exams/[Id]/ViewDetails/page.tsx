@@ -55,16 +55,18 @@ function getExamWindow(paper: StudentPaperDto) {
 }
 
 
+
 function getExamStatus(paper: StudentPaperDto) {
   const window = getExamWindow(paper);
   if (!window) return 'UNKNOWN';
 
-  const now = new Date();
+  const now = new Date(new Date().toISOString());
 
   if (now < window.start) return 'UPCOMING';
   if (now > window.end) return 'ENDED';
   return 'LIVE';
 }
+
 
 
 export default function ViewDetailsPage({
