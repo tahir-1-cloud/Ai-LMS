@@ -8,53 +8,26 @@ namespace StudyApp.API.Controllers
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class QuestionController : ControllerBase
+    public class ZoomController : ControllerBase
     {
-        private readonly IQuestionServices _questionServices;
+        private readonly IZoomService _zoomService;
 
-        public QuestionController(IQuestionServices questionServices)
+        public ZoomController(IZoomService zoomService)
         {
-            _questionServices = questionServices;
+            _zoomService = zoomService;
         }
 
-        [HttpPost]
-        public async Task<IActionResult> AddQuestion([FromBody] CreateQuestionModel question)
+        [HttpGet("signature")]
+        public IActionResult GetSignature(
+            [FromQuery] string meetingNumber,
+            [FromQuery] int role = 0
+        )
         {
-            try
-            {
-                await _questionServices.AddQuestion(question);
-                return Created();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+            if (string.IsNullOrWhiteSpace(meetingNumber))
+                return BadRequest("Meeting number is required");
 
-        [HttpGet("{paperId}")]
-        public async Task<IActionResult> GetQuestionsForPaper(int paperId)
-        {
-            var questions = await _questionServices.GetQuestionsForPaperAsync(paperId);
-            return Ok(questions);
+            var signature = _zoomService.GenerateSignature(meetingNumber, role);
+            return Ok(new { signature });
         }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteQuestion(int id)
-        {
-            try
-            {
-                await _questionServices.DeleteQuestionAsync(id);
-                return NoContent();
-            }
-            catch (KeyNotFoundException knf)
-            {
-                return NotFound(knf.Message);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
     }
 }
