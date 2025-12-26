@@ -83,6 +83,8 @@ builder.Services.AddScoped<ITestResultServices, TestResultServices>();
 builder.Services.AddScoped<IAttemptService, AttemptService>();
 builder.Services.AddScoped<IStudentLectureService, StudentLectureService>();
 
+builder.Services.AddScoped<IZoomService, ZoomService>();
+
 // Mapster
 MappingConfig.RegisterMappings();
 
