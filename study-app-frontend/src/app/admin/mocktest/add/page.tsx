@@ -16,9 +16,10 @@ import Label from "@/components/form/Label";
 import Input from "@/components/form/input/InputField";
 import DatePicker from '@/components/form/date-picker';
 import { useRouter } from 'next/navigation';
+import { useAdminAuth } from "@/hooks/useAdminAuth";    
 
 export default function AddMockPaperForm() {
-
+    useAdminAuth();
     const [title, setTitle] = useState('');
     const [testDate, setTestDate] = useState<Date>();
      const router = useRouter();

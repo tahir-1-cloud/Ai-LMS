@@ -20,8 +20,10 @@ import {
   AdminAttemptListDto,
   AttemptResultDto
 } from '@/services/paperService';
+import { useAdminAuth } from "@/hooks/useAdminAuth";   
 
 export default function AdminResultsPage() {
+  useAdminAuth();
   const [data, setData] = useState<AdminAttemptListDto[]>([]);
   const [filtered, setFiltered] = useState<AdminAttemptListDto[]>([]);
   const [loading, setLoading] = useState(true);

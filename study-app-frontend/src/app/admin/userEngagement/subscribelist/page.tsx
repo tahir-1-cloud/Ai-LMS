@@ -7,8 +7,10 @@ import { getAllSubscriber, deleteSubscriber } from '@/services/publicServices';
 import { subscriber } from '@/types/contactus';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import {toast} from "sonner"
+import { useAdminAuth } from "@/hooks/useAdminAuth"; 
 
 export default function SubscriberListPage() {
+    useAdminAuth();
     const [subscribers, setSubscribers] = useState<subscriber[]>([]);
     const [filteredSubscribers, setFilteredSubscribers] = useState<subscriber[]>([]);
     const [loading, setLoading] = useState(true);

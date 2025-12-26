@@ -9,6 +9,7 @@ export interface Student {
     fatherName: string;
     password: string;
     sessionId: number;
+    isBlocked:boolean;
 }
 
 export interface AssignedPaperDto {

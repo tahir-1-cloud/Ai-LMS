@@ -5,8 +5,10 @@ import AppHeader from "@/layout/admin/AppHeader";
 import AppSidebar from "@/layout/admin/AppSidebar";
 import Backdrop from "@/layout/admin/Backdrop";
 import React from "react";
+import { useAdminAuth } from "@/hooks/useAdminAuth"; 
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
+    useAdminAuth();
     const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
     const mainContentMargin = isMobileOpen

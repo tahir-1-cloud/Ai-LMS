@@ -7,8 +7,10 @@ import { getAllContactInfo, deleteContactInfo } from '@/services/publicServices'
 import { contactus } from '@/types/contactus';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import {toast} from "sonner"
+import { useAdminAuth } from "@/hooks/useAdminAuth"; 
 
 export default function ContactListPage() {
+    useAdminAuth();
     const [contacts, setContacts] = useState<contactus[]>([]);
     const [filteredContacts, setFilteredContacts] = useState<contactus[]>([]);
     const [loading, setLoading] = useState(true);

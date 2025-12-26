@@ -4,6 +4,7 @@ namespace StudyApp.API.Domain.Interfaces
 {
     public interface IApplicationUserRepository : IBaseRepository<ApplicationUser>
     {
+        Task<ApplicationUser?> GetUserByIdAsync(int studentId);
         Task<ApplicationUser?> GetUserByCNICorEmail(string cnic, string email);
         Task<ApplicationUser?> GetUserByCNIC(string cnic);
         Task<ApplicationUser?> GetUserByEmail(string email);

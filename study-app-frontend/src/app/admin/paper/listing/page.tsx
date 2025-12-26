@@ -25,8 +25,10 @@ import type { PaperModel } from '@/types/createPaper.model';
 import type { Question } from '@/services/QuestionService';
 import type { Session } from '@/types/session';
 import { ExclamationCircleOutlined, TeamOutlined, AppstoreAddOutlined } from '@ant-design/icons';
+import { useAdminAuth } from "@/hooks/useAdminAuth";  
 
 export default function Page() {
+  useAdminAuth();
   const [papers, setPapers] = useState<PaperModel[]>([]);
   const [filteredPapers, setFilteredPapers] = useState<PaperModel[]>([]);
   const [loading, setLoading] = useState(true);

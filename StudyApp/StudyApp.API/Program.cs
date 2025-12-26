@@ -65,6 +65,9 @@ builder.Services.AddScoped<ILecturesRepository, LecturesRepository>();
 builder.Services.AddScoped<ITestResultRepository, TestResultRepository>();
 builder.Services.AddScoped<IAttemptRepository, AttemptRepository>();
 builder.Services.AddScoped<IStudentLectureRepository, StudentLectureRepository>();
+builder.Services.AddScoped<IBlogsRepository, BlogsRepository>();
+
+
 
 // Services
 builder.Services.AddScoped<IAuthenticationServices, AuthenticationServices>();
@@ -82,6 +85,7 @@ builder.Services.AddScoped<ILectureServices, LectureServices>();
 builder.Services.AddScoped<ITestResultServices, TestResultServices>();
 builder.Services.AddScoped<IAttemptService, AttemptService>();
 builder.Services.AddScoped<IStudentLectureService, StudentLectureService>();
+builder.Services.AddScoped<IBlogsServices, BlogsServices>();
 
 builder.Services.AddScoped<IZoomService, ZoomService>();
 
@@ -123,12 +127,15 @@ builder.Services.AddCors(options =>
     });
 });
 
+
+
 // Controllers & Swagger
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
 
 // Static files
 app.UseStaticFiles(new StaticFileOptions

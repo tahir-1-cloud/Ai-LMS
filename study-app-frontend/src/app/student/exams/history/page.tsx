@@ -5,6 +5,7 @@ import { Table, Button, Modal, Tag, Card, Divider, Spin } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { Trophy, BookOpenCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useStudentAuth } from "@/hooks/useStudentAuth";
 
 import {
   getMyAttempts,
@@ -23,6 +24,7 @@ interface AttemptRow {
 }
 
 export default function AttemptHistoryPage() {
+  useStudentAuth();
   const router = useRouter();
 
   const [loading, setLoading] = useState(true);

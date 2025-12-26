@@ -9,10 +9,13 @@ import { addStudent } from '@/services/userService';
 import { DatePicker } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import { useAdminAuth } from "@/hooks/useAdminAuth";  
+
 
 dayjs.extend(customParseFormat);
 
 export default function AddStudentPage() {
+    useAdminAuth();
     const router = useRouter();
     const [sessions, setSessions] = useState<Session[]>([]);
     const [formData, setFormData] = useState<Student>({

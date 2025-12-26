@@ -36,7 +36,10 @@ namespace StudyApp.API.Data
         public DbSet<TestResultAnswer> TestResultAnswers { get; set; }
 
         public DbSet<StudentLecture> StudentLectures { get; set; }
-        public DbSet<Lecturedetails> Lecturedetails { get; set; }  
+        public DbSet<Lecturedetails> Lecturedetails { get; set; }
+
+        public DbSet<Blogs> blogs { get; set; }
+
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

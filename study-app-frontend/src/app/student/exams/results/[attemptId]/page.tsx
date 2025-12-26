@@ -5,12 +5,12 @@ import { useRouter } from 'next/navigation';
 import { Spin, Card, Tag, Divider, Button } from 'antd';
 import { Trophy, BookOpenCheck } from 'lucide-react';
 import { getAttemptResult } from '@/services/attemptService';
+import { useStudentAuth } from "@/hooks/useStudentAuth";
 
-export default function AttemptResults({
-  params,
-}: {
-  params: { attemptId?: string } | Promise<{ attemptId?: string }>;
-}) {
+export default function AttemptResults({params,}: {
+  params: { attemptId?: string } | Promise<{ attemptId?: string }>;})
+  {
+    useStudentAuth();
   const raw = (params as any)?.attemptId;
   const attemptId = raw ? Number(raw) : NaN;
   const router = useRouter();

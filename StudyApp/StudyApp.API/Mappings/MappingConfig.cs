@@ -42,6 +42,9 @@ namespace StudyApp.API.Mappings
 
             TypeAdapterConfig<Lecturedetails, LectureDetailsResponseDto>.NewConfig()
            .TwoWays();
+
+            TypeAdapterConfig<Blogs, BlogsModel>.NewConfig()
+           .TwoWays();
         }
     }
 }

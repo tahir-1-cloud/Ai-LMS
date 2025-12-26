@@ -5,6 +5,8 @@ import { TrashIcon } from '@heroicons/react/24/outline';
 import {toast} from "sonner"
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useAdminAuth } from "@/hooks/useAdminAuth"; 
+
 
 import {
   QuestionCreateDto,
@@ -13,6 +15,7 @@ import {
 } from '@/services/QuestionService';
 
 export default function AddQuestionPage() {
+  useAdminAuth();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [options, setOptions] = useState<OptionDto[]>([

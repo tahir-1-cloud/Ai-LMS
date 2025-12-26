@@ -4,8 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Addpubliclectures } from '@/services/lecturesServices';
 import {toast} from "sonner"
+import { useAdminAuth } from "@/hooks/useAdminAuth";   
 
 export default function AddLecturePage() {
+    
+useAdminAuth();
+
     const router = useRouter();
 
     const [formData, setFormData] = useState({

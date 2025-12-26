@@ -7,7 +7,9 @@ import { studentEnrollmentlist } from '@/types/studentEnrollment';
 import { getAllEnrollStudent, deleteEnrollStudent } from '@/services/enrollmentService';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import {toast} from "sonner"
+import { useAdminAuth } from "@/hooks/useAdminAuth"; 
 export default function Page() {
+    useAdminAuth();
     const [students, setStudents] = useState<studentEnrollmentlist[]>([]);
     const [filteredStudents, setFilteredStudents] = useState<studentEnrollmentlist[]>([]);
     const [loading, setLoading] = useState(true);

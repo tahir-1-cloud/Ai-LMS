@@ -14,6 +14,7 @@ import {
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import { getStudentPaper, StudentPaperDto } from '@/services/paperService';
 import { startAttempt, getMyAttempts } from '@/services/studentService';
+import { useStudentAuth } from "@/hooks/useStudentAuth";
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -69,12 +70,11 @@ function getExamStatus(paper: StudentPaperDto) {
 
 
 
-export default function ViewDetailsPage({
- 
-  params,
-}: {
-  params: { Id: string };
-}) {
+export default function ViewDetailsPage({ params,}: {
+  params: { Id: string };})
+   {
+      useStudentAuth();
+
   const paperId = Number(params.Id);
   const router = useRouter();
   const studentId = getStudentId();

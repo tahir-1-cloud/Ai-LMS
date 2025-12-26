@@ -23,6 +23,7 @@ import {
 } from '@/services/studentService';
 import type { AssignedPaperDto, StudentAttemptDto } from '@/types/student';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
+import { useStudentAuth } from "@/hooks/useStudentAuth";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -85,6 +86,7 @@ function safeDateValue(date?: string | null): number {
 /* ------------------ COMPONENT ------------------ */
 
 export default function StudentAssignedTestsPage() {
+  useStudentAuth();
   const [assigned, setAssigned] = useState<AssignedPaperDto[]>([]);
   const [attempts, setAttempts] = useState<StudentAttemptDto[]>([]);
   const [loading, setLoading] = useState(true);
