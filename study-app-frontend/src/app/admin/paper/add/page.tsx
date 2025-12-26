@@ -9,8 +9,11 @@ import ComponentCard from '@/components/common/ComponentCard';
 import Label from '@/components/form/Label';
 import Input from '@/components/form/input/InputField';
 import { useRouter } from 'next/navigation';
+import { useAdminAuth } from "@/hooks/useAdminAuth";    
 
 export default function AddPaperForm() {
+  
+  useAdminAuth();
   const [title, setTitle] = useState('');
   const [testDateTime, setTestDateTime] = useState('');
   const [durationMinutes, setDurationMinutes] = useState<number | ''>(30);

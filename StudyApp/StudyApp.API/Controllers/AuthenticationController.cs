@@ -57,6 +57,23 @@ namespace StudyApp.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPut("{id}/block-status")]
+        public async Task<IActionResult> SetBlockStatus(int id, [FromQuery] bool isBlocked)
+        {
+            var result = await _authenticationServices.SetStudentBlockStatusAsync(id, isBlocked);
+
+            if (!result)
+                return NotFound(new { message = "Student not found" });
+
+            return Ok(new
+            {
+                message = isBlocked
+                    ? "Student blocked successfully"
+                    : "Student unblocked successfully"
+            });
+        }
+
     }
 
 }

@@ -8,10 +8,12 @@ import {toast} from "sonner"
 import { DatePicker } from "antd";
 import dayjs from 'dayjs';
 import customParseFormat from "dayjs/plugin/customParseFormat";
+import { useAdminAuth } from "@/hooks/useAdminAuth";  
 
 dayjs.extend(customParseFormat);
 
 export default function AddSessionPage() {
+    useAdminAuth();
     const router = useRouter();
     const [formData, setFormData] = useState<Session>({
         id: 0,

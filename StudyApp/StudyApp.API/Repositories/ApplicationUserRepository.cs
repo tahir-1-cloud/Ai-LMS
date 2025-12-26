@@ -11,6 +11,11 @@ namespace StudyApp.API.Repositories
         {
         }
 
+        public async Task<ApplicationUser?> GetUserByIdAsync(int studentId)
+        {
+            return await _context.ApplicationUsers.FirstOrDefaultAsync(x => x.Id == studentId);
+        }
+
         public async Task<ApplicationUser?> GetUserByCNIC(string cnic)
         {
             return await _context.ApplicationUsers

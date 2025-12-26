@@ -5,8 +5,10 @@ import { Table, Input, Select } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { getAllSessions } from '@/services/sessionService';
 import { Session } from '@/types/session';
+import { useAdminAuth } from "@/hooks/useAdminAuth";  
 
 export default function SessionsPage() {
+    useAdminAuth();
     const [sessions, setSessions] = useState<Session[]>([]);
     const [filteredSessions, setFilteredSessions] = useState<Session[]>([]);
     const [loading, setLoading] = useState(true);

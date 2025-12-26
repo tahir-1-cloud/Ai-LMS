@@ -1,12 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Table, Input, Select } from 'antd';
+import { Table, Input, Select ,Switch} from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { Student } from '@/types/student';
-import { getAllStudents } from "@/services/userService";
+import { getAllStudents,updateStudentBlockStatus } from "@/services/userService";
+import { useAdminAuth } from "@/hooks/useAdminAuth";  
+import { toast } from 'sonner';
 
 export default function StudentsPage() {
+    useAdminAuth();
     const [students, setStudents] = useState<Student[]>([]);
     const [filteredStudents, setFilteredStudents] = useState<Student[]>([]);
     const [loading, setLoading] = useState(true);
@@ -43,6 +46,32 @@ export default function StudentsPage() {
         setFilteredStudents(filtered);
     };
 
+const handleBlockToggle = async (studentId: number, isBlocked: boolean) => {
+    try {
+        await updateStudentBlockStatus(studentId, isBlocked);
+
+        toast.success(
+            isBlocked
+                ? "Student blocked successfully"
+                : "Student unblocked successfully"
+        );
+
+        const updatedStudents = students.map(student =>
+            student.id === studentId
+                ? { ...student, isBlocked }
+                : student
+        );
+
+        setStudents(updatedStudents);
+        setFilteredStudents(updatedStudents);
+
+    } catch (error) {
+        toast.error("Failed to update student status");
+        console.error(error);
+    }
+};
+
+
     const columns: ColumnsType<Student> = [
         {
             title: '#',
@@ -50,17 +79,34 @@ export default function StudentsPage() {
             key: 'index',
             render: (_: unknown, __: Student, index: number) => index + 1,
         },
-        { title: 'Full Name', dataIndex: 'fullName', key: 'fullName' },
-        { title: 'Father Name', dataIndex: 'fatherName', key: 'fatherName' },
-        { title: 'CNIC', dataIndex: 'cnic', key: 'cnic' },
-        { title: 'Phone', dataIndex: 'phoneNumber', key: 'phoneNumber' },
-        { title: 'Email', dataIndex: 'emailAddress', key: 'emailAddress' },
+        { title: 'Full Name', dataIndex: 'fullName', key: 'fullName',ellipsis: true },
+        { title: 'Father Name', dataIndex: 'fatherName', key: 'fatherName',ellipsis: true },
+        { title: 'CNIC', dataIndex: 'cnic', key: 'cnic',ellipsis: true },
+        { title: 'Phone', dataIndex: 'phoneNumber', key: 'phoneNumber',ellipsis: true },
+        { title: 'Email', dataIndex: 'emailAddress', key: 'emailAddress',ellipsis: true },
         {
             title: 'DOB',
             dataIndex: 'dob',
             key: 'dob',
             render: (dob: string) => new Date(dob).toLocaleDateString(),
         },
+        {
+        title: 'Status',
+        key: 'status',
+        render: (_: unknown, record: Student) => (
+            <Switch
+                checked={!record.isBlocked}
+                checkedChildren="Active"
+                unCheckedChildren="Blocked"
+               onChange={(checked) => {
+                if (record.id === undefined) return;
+                handleBlockToggle(record.id, !checked);
+            }}
+            />
+        ),
+    },
+
+
     ];
 
     return (

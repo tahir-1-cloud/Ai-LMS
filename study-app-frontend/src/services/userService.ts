@@ -22,3 +22,16 @@ export const getAllStudents = async (): Promise<Student[]> => {
     const response = await axiosInstance.get(`/Authentication/GetAllStudents`);
     return response.data;
 };
+
+export const updateStudentBlockStatus = async (studentId: number,isBlocked: boolean) => 
+    {
+    const response = await axiosInstance.put(
+        `/Authentication/SetBlockStatus/${studentId}/block-status`,
+        null,
+        {
+            params: { isBlocked }
+        }
+    );
+
+    return response.data;
+ };

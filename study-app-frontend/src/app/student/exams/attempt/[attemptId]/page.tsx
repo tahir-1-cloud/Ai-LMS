@@ -6,6 +6,8 @@ import * as signalR from '@microsoft/signalr';
 import { Card, Button, Space, Spin, Modal, message, Tag, Divider, Typography } from 'antd';
 import { getAttempt, saveAnswer, completeAttempt } from '@/services/attemptService';
 import type { AttemptDto } from '@/types/attempt';
+import { useStudentAuth } from "@/hooks/useStudentAuth";
+
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -20,6 +22,7 @@ function unwrapParams<T extends Record<string, any>>(params: T | Promise<T>): T 
 }
 
 export default function AttemptRunner({ params }: { params: { attemptId?: string } | Promise<{ attemptId?: string }> }) {
+  useStudentAuth();
   const resolvedParams = unwrapParams(params as any);
   const rawId = resolvedParams?.attemptId;
   const attemptId = rawId ? Number(rawId) : NaN;

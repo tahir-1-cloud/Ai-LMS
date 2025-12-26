@@ -6,8 +6,10 @@ import type { ColumnsType } from 'antd/es/table';
 import { getAllstudentLectures } from '@/services/studentLectureServices';
 import { LectureDetailsResponseDto } from '@/types/studentLectures';
 import { toast } from 'sonner';
+import { useAdminAuth } from "@/hooks/useAdminAuth";  
 
 export default function StudentLecturesPage() {
+  useAdminAuth();
   const [lectures, setLectures] = useState<LectureDetailsResponseDto[]>([]);
   const [filteredLectures, setFilteredLectures] = useState<LectureDetailsResponseDto[]>([]);
   const [loading, setLoading] = useState(true);

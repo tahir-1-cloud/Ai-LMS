@@ -9,5 +9,7 @@ namespace StudyApp.API.Services.Interfaces
         public Task<LoginResponse> LoginStudent(LoginModel student);
 
         public Task<IEnumerable<ApplicationUserModel>> GetAllStudent();
+
+        Task<bool> SetStudentBlockStatusAsync(int studentId, bool isBlocked);
     }
 }

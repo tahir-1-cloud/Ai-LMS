@@ -1,4 +1,5 @@
 ﻿using Azure.Core;
+using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
@@ -98,7 +99,7 @@ namespace StudyApp.API.Services.Implementations
                 throw new Exception("Invalid Credentials");
 
             if (applicationUser.IsBlocked)
-                throw new Exception("Please contact administration office");
+                throw new Exception("Your account is blocked. Please contact administration office");
 
             if (!applicationUser.Password.Equals(student.Password))
                 throw new Exception("Invalid Credentials");
@@ -144,8 +145,6 @@ namespace StudyApp.API.Services.Implementations
             };
         }
 
-        
-
         private string GenerateJwtToken(ApplicationUser applicationUser)
         {
             var key = new SymmetricSecurityKey(
@@ -177,5 +176,21 @@ namespace StudyApp.API.Services.Implementations
         }
 
 
+        public async Task<bool> SetStudentBlockStatusAsync(int studentId, bool isBlocked)
+        {
+            var student = await _userRepository.GetUserByIdAsync(studentId);
+
+            if (student == null)
+                return false;
+
+            // No unnecessary DB update
+            if (student.IsBlocked == isBlocked)
+                return true;
+
+            student.IsBlocked = isBlocked;
+            await _userRepository.UpdateAsync(student);
+
+            return true;
+        }
     }
 }

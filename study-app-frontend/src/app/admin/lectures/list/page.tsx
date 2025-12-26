@@ -7,8 +7,10 @@ import { getLectures,deleteLecturesbyId  } from '@/services/lecturesServices';
 import { LecturesModel } from '@/types/lecturesModel';
 import { ExclamationCircleOutlined } from '@ant-design/icons';
 import {toast} from "sonner"
+import { useAdminAuth } from "@/hooks/useAdminAuth";    
 
 export default function LecturesPage() {
+    useAdminAuth();
     const [lectures, setLectures] = useState<LecturesModel[]>([]);
     const [filteredLectures, setFilteredLectures] = useState<LecturesModel[]>([]);
     const [loading, setLoading] = useState(true);
