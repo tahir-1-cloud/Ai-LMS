@@ -12,8 +12,8 @@ using StudyApp.API.Data;
 namespace StudyApp.API.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251227201945_LiveClassTableAdded")]
-    partial class LiveClassTableAdded
+    [Migration("20251227204120_LiveClassTableAddedup")]
+    partial class LiveClassTableAddedup
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -324,10 +324,7 @@ namespace StudyApp.API.Migrations
                     b.Property<DateTime>("ScheduledAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<long>("SessionId")
-                        .HasColumnType("bigint");
-
-                    b.Property<int>("SessionId1")
+                    b.Property<int>("SessionId")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -342,7 +339,7 @@ namespace StudyApp.API.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SessionId1");
+                    b.HasIndex("SessionId");
 
                     b.ToTable("LiveClasses");
                 });
@@ -1071,8 +1068,8 @@ namespace StudyApp.API.Migrations
                 {
                     b.HasOne("StudyApp.API.Domain.Entities.Session", "Session")
                         .WithMany()
-                        .HasForeignKey("SessionId1")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Session");

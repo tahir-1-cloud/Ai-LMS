@@ -67,7 +67,7 @@ builder.Services.AddScoped<IAttemptRepository, AttemptRepository>();
 builder.Services.AddScoped<IStudentLectureRepository, StudentLectureRepository>();
 builder.Services.AddScoped<IBlogsRepository, BlogsRepository>();
 
-
+builder.Services.AddHttpClient();
 
 // Services
 builder.Services.AddScoped<IAuthenticationServices, AuthenticationServices>();
@@ -86,7 +86,10 @@ builder.Services.AddScoped<ITestResultServices, TestResultServices>();
 builder.Services.AddScoped<IAttemptService, AttemptService>();
 builder.Services.AddScoped<IStudentLectureService, StudentLectureService>();
 builder.Services.AddScoped<IBlogsServices, BlogsServices>();
+builder.Services.AddScoped<ILiveClassService, LiveClassService>();
 
+builder.Services.AddScoped<ZoomTokenService>();
+builder.Services.AddScoped<ZoomMeetingService>();
 builder.Services.AddScoped<IZoomService, ZoomService>();
 
 // Mapster

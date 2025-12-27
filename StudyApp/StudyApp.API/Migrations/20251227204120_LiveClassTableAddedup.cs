@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace StudyApp.API.Migrations
 {
     /// <inheritdoc />
-    public partial class LiveClassTableAdded : Migration
+    public partial class LiveClassTableAddedup : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,7 +17,7 @@ namespace StudyApp.API.Migrations
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SessionId = table.Column<long>(type: "bigint", nullable: false),
+                    SessionId = table.Column<int>(type: "int", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     MeetingNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: false),
@@ -25,7 +25,6 @@ namespace StudyApp.API.Migrations
                     DurationMinutes = table.Column<int>(type: "int", nullable: false),
                     IsStarted = table.Column<bool>(type: "bit", nullable: false),
                     IsEnded = table.Column<bool>(type: "bit", nullable: false),
-                    SessionId1 = table.Column<int>(type: "int", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
                     CreatedBy = table.Column<int>(type: "int", nullable: false),
@@ -37,17 +36,17 @@ namespace StudyApp.API.Migrations
                 {
                     table.PrimaryKey("PK_LiveClasses", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_LiveClasses_Sessions_SessionId1",
-                        column: x => x.SessionId1,
+                        name: "FK_LiveClasses_Sessions_SessionId",
+                        column: x => x.SessionId,
                         principalTable: "Sessions",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_LiveClasses_SessionId1",
+                name: "IX_LiveClasses_SessionId",
                 table: "LiveClasses",
-                column: "SessionId1");
+                column: "SessionId");
         }
 
         /// <inheritdoc />

@@ -1,33 +1,48 @@
 'use client';
 
-import { useEffect } from 'react';
+import { FC, useEffect, useRef, useState } from 'react';
 import ZoomMtgEmbedded from '@zoom/meetingsdk/embedded';
+import { twMerge } from 'tailwind-merge';
 
 const client = ZoomMtgEmbedded.createClient();
 
-interface Props {
+interface ZoomMeetingProps {
   meetingNumber: string;
   password?: string;
   userName: string;
+  role: 0 | 1; // 0 = student, 1 = admin (host)
+  className?: string;
 }
 
-export default function ZoomMeeting({
+const ZoomMeeting: FC<ZoomMeetingProps> = ({
   meetingNumber,
   password = '',
   userName,
-}: Props) {
-  useEffect(() => {
-    const startMeeting = async () => {
-      // 1. Get signature from backend
+  role,
+  className,
+}) => {
+  const zoomRootRef = useRef<HTMLDivElement | null>(null);
+  const [loading, setLoading] = useState(true);
+
+useEffect(() => {
+  let mounted = true;
+
+  const startMeeting = async () => {
+    try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/zoom/signature?meetingNumber=${meetingNumber}&role=0`
+        `${process.env.NEXT_PUBLIC_API_URL}/api/zoom/signature?meetingNumber=${meetingNumber}&role=${role}`
       );
 
-      const data = await res.json();
+      if (!res.ok) {
+        throw new Error('Failed to get Zoom signature');
+      }
 
-      // 2. Init Zoom
+      const { signature } = await res.json();
+
+      if (!mounted || !zoomRootRef.current) return;
+
       client.init({
-        zoomAppRoot: document.getElementById('zoom-root')!,
+        zoomAppRoot: zoomRootRef.current,
         language: 'en-US',
         customize: {
           video: {
@@ -36,23 +51,52 @@ export default function ZoomMeeting({
         },
       });
 
-      // 3. Join meeting
-      client.join({
+      await client.join({
         sdkKey: process.env.NEXT_PUBLIC_ZOOM_SDK_KEY!,
-        signature: data.signature,
+        signature,
         meetingNumber,
         password,
         userName,
       });
-    };
 
-    startMeeting();
-  }, []);
+      if (mounted) setLoading(false);
+    } catch (err) {
+      console.error('Zoom meeting error:', err);
+    }
+  };
+
+  startMeeting();
+
+  return () => {
+    mounted = false;
+    try {
+      client.leaveMeeting();
+    } catch {
+      // no-op
+    }
+  };
+}, [meetingNumber, password, userName, role]);
+
 
   return (
     <div
-      id="zoom-root"
-      style={{ width: '100%', height: '100vh' }}
-    />
+      className={twMerge(
+        'relative h-screen w-full bg-black',
+        className
+      )}
+    >
+      {loading && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center text-white">
+          Joining meeting…
+        </div>
+      )}
+
+      <div
+        ref={zoomRootRef}
+        className="h-full w-full"
+      />
+    </div>
   );
-}
+};
+
+export default ZoomMeeting;

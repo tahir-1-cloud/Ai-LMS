@@ -1,0 +1,67 @@
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using StudyApp.API.Domain.Entities;
+using StudyApp.API.Dto;
+using StudyApp.API.Models;
+using StudyApp.API.Services.Implementations;
+using StudyApp.API.Services.Interfaces;
+
+namespace StudyApp.API.Controllers
+{
+    [Route("api/[controller]/[action]")]
+    [ApiController]
+    public class LiveClassController : ControllerBase
+    {
+        private readonly ILiveClassService _service;
+        private readonly IZoomService _zoomService;
+
+        public LiveClassController(ILiveClassService service, IZoomService zoomService)
+        {
+            _service = service;
+            _zoomService = zoomService;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] CreateLiveClassModel model)
+        {
+            await _service.CreateLiveClassAsync(model);
+            return Ok();
+        }
+
+        [HttpPost("{id}/start")]
+        public async Task<IActionResult> Start(int id)
+        {
+            await _service.StartLiveClassAsync(id);
+            return Ok();
+        }
+
+        [HttpPost("{id}/end")]
+        public async Task<IActionResult> End(int id)
+        {
+            await _service.EndLiveClassAsync(id);
+            return Ok();
+        }
+
+        [HttpGet("session/{sessionId}")]
+        public async Task<IActionResult> GetForSession(int sessionId)
+        {
+            var result = await _service.GetActiveLiveClassForSession(sessionId);
+            return Ok(result);
+        }
+
+        [HttpGet("signature")]
+        public IActionResult GetSignature([FromQuery] string meetingNumber,[FromQuery] int role)
+        {
+            var signature = _zoomService.GenerateSignature(meetingNumber, role);
+            return Ok(new { signature });
+        }
+
+        [HttpGet("session/{sessionId}/all")]
+        public async Task<IActionResult> GetAllForSession(int sessionId)
+        {
+            var result = await _service.GetLiveClassesForSessionAsync(sessionId);
+            return Ok(result);
+        }
+
+    }
+}

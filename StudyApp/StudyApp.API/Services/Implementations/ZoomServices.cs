@@ -6,17 +6,22 @@ using StudyApp.API.Models;
 using StudyApp.API.Repositories;
 using StudyApp.API.Services.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
+using static System.Net.WebRequestMethods;
 
 namespace StudyApp.API.Services.Implementations
 {
     public class ZoomService : IZoomService
     {
         private readonly IConfiguration _config;
+        private readonly HttpClient _http;
 
-        public ZoomService(IConfiguration config)
+        public ZoomService(IConfiguration config, HttpClient http)
         {
             _config = config;
+            _http = http;
         }
 
         public string GenerateSignature(string meetingNumber, int role)
