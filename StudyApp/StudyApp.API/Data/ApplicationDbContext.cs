@@ -39,6 +39,8 @@ namespace StudyApp.API.Data
         public DbSet<Lecturedetails> Lecturedetails { get; set; }
 
         public DbSet<Blogs> blogs { get; set; }
+        public DbSet<LiveClass> LiveClasses { get; set; }
+
 
 
 
