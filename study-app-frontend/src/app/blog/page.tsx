@@ -5,7 +5,7 @@ import Navbar from "@/components/pages/Navbar";
 export default function Page(){
     return(<>
              <Navbar/>
-            <Blog/>
+             <Blog/>
              <Footer/>
       </>
 )
