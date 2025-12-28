@@ -72,6 +72,24 @@ namespace StudyApp.API.Controllers
             }
         }
 
+        [HttpGet("{blogId}")]
+        public async Task<IActionResult> GetBlogDetails(int blogId)
+        {
+            try
+            {
+                var blog = await _blogServices.BlogsDetails(blogId);
+
+                if (blog == null)
+                    return NotFound(new { message = $"Blog with ID {blogId} not found." });
+
+                return Ok(blog);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
 
         [HttpDelete("{blogsId}")]
         public async Task<IActionResult> DeleteBlogs(int blogsId)

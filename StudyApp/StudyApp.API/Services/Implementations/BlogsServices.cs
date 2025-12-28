@@ -24,8 +24,8 @@ namespace StudyApp.API.Services.Implementations
                 Title = model.Title,
                 ImageUrl = model.ImageUrl,
                 ShortDescription = model.ShortDescription,
-                Content = model.ShortDescription,
-                CreatedAt = DateTime.UtcNow
+                Content = model.Content,
+                CreatedAt = DateTime.Now
             };
             await _blogsRepository.AddAsync(blogs);
         }
@@ -39,6 +39,12 @@ namespace StudyApp.API.Services.Implementations
         public async Task DeleteBlogs(int blogsId)
         {
             await _blogsRepository.DeleteBlogsAsync(blogsId);
+        }
+
+        public async Task<BlogDetailsDto> BlogsDetails(int blogsId)
+        {
+            var blog = await _blogsRepository.BlogsDetailsAsync(blogsId);
+            return blog;
         }
     }
 }

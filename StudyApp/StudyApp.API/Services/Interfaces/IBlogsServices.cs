@@ -10,5 +10,7 @@ namespace StudyApp.API.Services.Interfaces
         Task<IEnumerable<BlogsDto>> GetBlogs();
 
         Task DeleteBlogs(int blogsId);
+
+        Task<BlogDetailsDto> BlogsDetails(int blogsId);
     }
 }

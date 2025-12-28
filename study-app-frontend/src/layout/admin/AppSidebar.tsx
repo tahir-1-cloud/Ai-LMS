@@ -82,8 +82,21 @@ const navItems: NavItem[] = [
             }
         ],
             
+     },
+     {
+        icon: <ClipboardIcon className="w-5 h-5"/>,
+        name: "Blogs",
+        subItems: [
+            {
+                name: "Add Blogs", path: "/admin/Blogs/add", pro: false
+            },
+            {
+                name: "Listing", path: "/admin/Blogs/listing", pro: false
+            },
+           
+        ],
+            
     },
-
       {
             icon: <ClipboardIcon className="w-5 h-5"/>,
             name: "Public Lectures",

@@ -1,4 +1,5 @@
 ﻿using StudyApp.API.Domain.Entities;
+using StudyApp.API.Dto;
 
 namespace StudyApp.API.Domain.Interfaces
 {
@@ -6,5 +7,7 @@ namespace StudyApp.API.Domain.Interfaces
     {
 
         Task DeleteBlogsAsync(int blogsId);
+
+        Task<BlogDetailsDto> BlogsDetailsAsync(int blogsId);
     }
 }
