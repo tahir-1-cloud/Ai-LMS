@@ -97,5 +97,9 @@ namespace StudyApp.API.Services.Implementations
             return dtos;
         }
 
+        public async Task AssignLectureToSession(int lectureId, int sessionId)
+        {
+            await _StudentLectureRepository.AssignLecturesToSessionAsync(lectureId, sessionId);
+        }
     }
 }

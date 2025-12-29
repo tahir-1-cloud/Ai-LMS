@@ -150,11 +150,11 @@ namespace StudyApp.API.Data
                         .OnDelete(DeleteBehavior.Restrict);  // FIXED
 
 
-                // --- Lecture -> StudentLecture ----------------
+            // --- Lecture -> StudentLecture ----------------
                     modelBuilder.Entity<StudentLecture>()
-                        .HasOne(sl => sl.Students)
+                        .HasOne(sl => sl.Session)
                         .WithMany(s => s.StudentLectures)
-                        .HasForeignKey(sl => sl.StudentId)
+                        .HasForeignKey(sl => sl.SessionId)
                         .OnDelete(DeleteBehavior.Restrict);  // SAFE
 
                     modelBuilder.Entity<StudentLecture>()
@@ -163,18 +163,19 @@ namespace StudyApp.API.Data
                         .HasForeignKey(sl => sl.LecturedetailId)
                         .OnDelete(DeleteBehavior.Restrict);  // SAFE
 
-                    // Avoid duplicate assignment:
+                    // Avoid duplicate assignment for same session + lecture
                     modelBuilder.Entity<StudentLecture>()
-                        .HasIndex(sl => new { sl.StudentId, sl.LecturedetailId })
+                        .HasIndex(sl => new { sl.SessionId, sl.LecturedetailId })
                         .IsUnique();
 
 
-                    // =======================
-                    // MockTest cascade setup
-                    // =======================
 
-                    // MockTest -> MockQuestion
-                    modelBuilder.Entity<MockQuestion>()
+            // =======================
+            // MockTest cascade setup
+            // =======================
+
+            // MockTest -> MockQuestion
+            modelBuilder.Entity<MockQuestion>()
                         .HasOne(mq => mq.MockTest)
                         .WithMany(mt => mt.MockQuestions)
                         .HasForeignKey(mq => mq.MockTestId)

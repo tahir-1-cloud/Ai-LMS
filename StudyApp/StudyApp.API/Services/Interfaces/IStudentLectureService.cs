@@ -10,5 +10,7 @@ namespace StudyApp.API.Services.Interfaces
         Task CreateLectureAsync(LectureDetailsModel model);
 
         Task<IEnumerable<LectureDetailsResponseDto>> GetAllLectures();
+
+        Task AssignLectureToSession(int lectureId, int sessionId);
     }
 }

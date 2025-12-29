@@ -2,8 +2,11 @@
 {
     public class StudentLecture:AuditEntity
     {
-        public int StudentId { get; set; }
-        public ApplicationUser Students { get; set; }
+        //public int StudentId { get; set; }
+        //public ApplicationUser Students { get; set; }
+
+        public int SessionId { get; set; }
+        public Session Session { get; set; } = null!;
 
         public int LecturedetailId { get; set; }
         public Lecturedetails Lecturedetails { get; set; }

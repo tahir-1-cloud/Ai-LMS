@@ -49,5 +49,23 @@ namespace StudyApp.API.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AssignToSession([FromBody] AssignLectureDto dto)
+        {
+            try
+            {
+                await _studentLectureService.AssignLectureToSession(dto.LectureId, dto.SessionId);
+                return Ok();
+            }
+            catch (KeyNotFoundException knf)
+            {
+                return NotFound(knf.Message);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

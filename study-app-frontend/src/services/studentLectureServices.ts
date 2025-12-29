@@ -1,7 +1,7 @@
 
 import {LectureDetailsResponseDto} from "@/types/studentLectures";
 import axiosInstance from "@/services/axiosInstance";
-
+import axios from "axios";
 
 export async function addStudentLectures(data: FormData) {
   try {
@@ -22,4 +22,17 @@ export async function addStudentLectures(data: FormData) {
 export const getAllstudentLectures = async (): Promise<LectureDetailsResponseDto[]> => {
     const response = await axiosInstance.get<LectureDetailsResponseDto[]>(`/StudentLectures/GetAlllectures`);
     return response.data;
+};
+
+export const assignLectureToSession = async (lectureId: number, sessionId: number): Promise<void> => {
+    try {
+        await axiosInstance.post("/StudentLectures/AssignToSession", { lectureId, sessionId });
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            console.error("Error assigning Lectures:", error.response?.data || error.message);
+        } else {
+            console.error("Unexpected error assigning Lectures:", error);
+        }
+        throw error;
+    }
 };
