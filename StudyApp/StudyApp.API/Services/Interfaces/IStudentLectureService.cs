@@ -12,5 +12,9 @@ namespace StudyApp.API.Services.Interfaces
         Task<IEnumerable<LectureDetailsResponseDto>> GetAllLectures();
 
         Task AssignLectureToSession(int lectureId, int sessionId);
+
+        Task UnassignLectureFromSession(int lectureId, int sessionId);
+
+        Task<List<int>> GetLectureAssignedSessionId(int lectureId);
     }
 }

@@ -101,5 +101,23 @@ namespace StudyApp.API.Services.Implementations
         {
             await _StudentLectureRepository.AssignLecturesToSessionAsync(lectureId, sessionId);
         }
+
+        public async Task UnassignLectureFromSession(int lectureId, int sessionId)
+        {
+            var entry = await _StudentLectureRepository.GetLecturesSession(lectureId, sessionId);
+
+            if (entry == null)
+                throw new Exception("Lecture is not assigned to this session.");
+
+            await _StudentLectureRepository.RemoveLecturesSession(entry);
+        }
+
+        public async Task<List<int>> GetLectureAssignedSessionId(int lectureId)
+        {
+            if (lectureId <= 0)
+                throw new ArgumentException("Invalid lectureId");
+
+            return await _StudentLectureRepository.GetLectureAssignedSessionIdsAsync(lectureId);
+        }
     }
 }

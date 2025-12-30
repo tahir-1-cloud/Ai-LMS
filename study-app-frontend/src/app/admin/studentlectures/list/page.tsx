@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react';
 import { Table, Input, Select, Modal, Button, Space, Spin, Alert, Popconfirm, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { getAllstudentLectures, assignLectureToSession } from '@/services/studentLectureServices';
+import { getAllstudentLectures, assignLectureToSession,unassignPaperFromSession
+  ,getLectureAssignments } from '@/services/studentLectureServices';
 import { LectureDetailsResponseDto } from '@/types/studentLectures';
 import type { Session } from '@/types/session';
 import { TeamOutlined } from '@ant-design/icons';
 import { useAdminAuth } from "@/hooks/useAdminAuth";  
 import axiosInstance from '@/services/axiosInstance';
+import { toast } from "sonner";
 
 export default function StudentLecturesPage() {
   useAdminAuth();
@@ -58,26 +60,30 @@ export default function StudentLecturesPage() {
     );
   };
 
-  const openAssignModal = async (lecture: LectureDetailsResponseDto) => {
-    setAssignLecture(lecture);
-    setAssignModalVisible(true);
-    setSessions([]);
-    setAssignedSessionIds([]);
-    setSelectedSessionId(null);
-    setSessionsLoading(true);
-    setSessionsError(null);
+const openAssignModal = async (lecture: LectureDetailsResponseDto) => {
+  setAssignLecture(lecture);
+  setAssignModalVisible(true);
+  setSessions([]);
+  setSelectedSessionId(null);
+  setSessionsLoading(true);
+  setSessionsError(null);
 
-    try {
-      const all = await axiosInstance.get<Session[]>('/Session/GetSession');
-      setSessions(all.data);
-      // For now, ignore GET assignments
-      setAssignedSessionIds([]);
-    } catch {
-      setSessionsError('Failed to load sessions');
-    } finally {
-      setSessionsLoading(false);
-    }
-  };
+  try {
+    // load sessions
+    const all = await axiosInstance.get<Session[]>('/Session/GetSession');
+    setSessions(all.data);
+
+    // ✅ load already assigned sessions
+    const assignedIds = await getLectureAssignments(lecture.id);
+    setAssignedSessionIds(assignedIds);
+
+  } catch {
+    setSessionsError('Failed to load sessions');
+  } finally {
+    setSessionsLoading(false);
+  }
+};
+
 
   const closeAssignModal = () => {
     setAssignModalVisible(false);
@@ -209,7 +215,17 @@ export default function StudentLecturesPage() {
 
       {/* Assign Modal */}
       <Modal
-        title={assignLecture ? `Assign — ${assignLecture.title}` : 'Assign Lecture'}
+        title={
+        <div className="flex flex-col">
+          <h2 className="text-lg font-semibold text-blue-700">
+            🎓 Assign Lectures to Students
+          </h2>
+          <span className="text-xs text-gray-500">
+            Select a session and assign the lecture
+          </span>
+        </div>
+      }
+
         open={assignModalVisible}
         onCancel={closeAssignModal}
         footer={null}
@@ -234,59 +250,84 @@ export default function StudentLecturesPage() {
                 title: 'Action',
                 width: 260,
                 render: (_, r: Session) => {
-                  const isAssigned = assignedSessionIds.includes(Number(r.id));
-                  const isSelected = selectedSessionId === Number(r.id);
+              const sessionId = Number(r.id);
+              const isAssigned = assignedSessionIds.includes(sessionId);
+              const isSelected = selectedSessionId === sessionId;
 
-                  return isAssigned ? (
-                    <Popconfirm
-                      title="Unassign lecture from this session?"
-                      onConfirm={async () => {
-                        setAssignLoading(true);
-                        try {
-                          await axiosInstance.post('/StudentLectures/UnassignFromSession', {
-                            lectureId: assignLecture?.id,
-                            sessionId: r.id,
-                          });
-                          message.success('Lecture unassigned');
-                          setAssignedSessionIds(p => p.filter(id => id !== Number(r.id)));
-                        } finally {
-                          setAssignLoading(false);
-                        }
-                      }}
-                    >
-                      <Button danger size="small">Unassign</Button>
-                    </Popconfirm>
-                  ) : (
-                    <Space>
-                      <Button
-                        size="small"
-                        type={isSelected ? 'primary' : 'default'}
-                        onClick={() => setSelectedSessionId(Number(r.id))}
-                      >
-                        {isSelected ? 'Selected' : 'Select'}
-                      </Button>
-                      <Button
-                        size="small"
-                        onClick={async () => {
-                          if (!assignLecture || selectedSessionId == null) {
-                            message.warning('Select a session');
-                            return;
-                          }
-                          setAssignLoading(true);
-                          try {
-                            await assignLectureToSession(assignLecture.id, Number(r.id));
-                            message.success('Lecture assigned');
-                            closeAssignModal();
-                          } finally {
-                            setAssignLoading(false);
-                          }
-                        }}
-                      >
-                        Assign now
-                      </Button>
-                    </Space>
-                  );
-                },
+  // ✅ WHEN ALREADY ASSIGNED
+  if (isAssigned) {
+    return (
+      <Space>
+        <Button size="small" disabled type="primary">
+          Assigned
+        </Button>
+
+        <Popconfirm
+          title="Unassign lecture from this session?"
+          okText="Yes"
+          cancelText="No"
+          onConfirm={async () => {
+            if (!assignLecture) return;
+
+            setAssignLoading(true);
+            try {
+              await unassignPaperFromSession(assignLecture.id, sessionId);
+              toast.success('Lecture unassigned');
+
+              // update UI
+              setAssignedSessionIds(prev =>
+                prev.filter(id => id !== sessionId)
+              );
+            } finally {
+              setAssignLoading(false);
+            }
+          }}
+        >
+          <Button danger size="small" loading={assignLoading}>
+            Unassign
+          </Button>
+        </Popconfirm>
+      </Space>
+    );
+  }
+
+  // ✅ WHEN NOT ASSIGNED
+  return (
+    <Space>
+      <Button
+        size="small"
+        type={isSelected ? 'primary' : 'default'}
+        onClick={() => setSelectedSessionId(sessionId)}
+      >
+        {isSelected ? 'Selected' : 'Select'}
+      </Button>
+
+      <Button
+        size="small"
+        disabled={!isSelected || assignLoading}
+        loading={assignLoading}
+        onClick={async () => {
+          if (!assignLecture) return;
+
+          setAssignLoading(true);
+          try {
+            await assignLectureToSession(assignLecture.id, sessionId);
+            toast.success('Lecture assigned');
+
+            // update UI
+            setAssignedSessionIds(prev => [...prev, sessionId]);
+            setSelectedSessionId(null);
+          } finally {
+            setAssignLoading(false);
+          }
+        }}
+      >
+        Assign now
+      </Button>
+    </Space>
+  );
+}
+
               },
             ]}
           />

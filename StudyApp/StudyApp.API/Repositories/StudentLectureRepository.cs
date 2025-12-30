@@ -26,15 +26,6 @@ namespace StudyApp.API.Repositories
             if (!sessionExists)
                 throw new KeyNotFoundException($"Session with id {sessionId} not found.");
 
-            // 2️⃣ Validate session
-        
-
-            // 3️⃣ Get already assigned students (avoid duplicates)
-            //var alreadyAssignedStudentIds = await _context.StudentLectures
-            //    .Where(sl => sl.LecturedetailId == lectureId)
-            //    .Select(sl => sl.StudentId)
-            //    .ToListAsync();
-
 
             var exists = await _context.StudentLectures
               .AnyAsync(ps => ps.LecturedetailId == lectureId && ps.SessionId == sessionId);
@@ -59,5 +50,24 @@ namespace StudyApp.API.Repositories
             await _context.SaveChangesAsync();
         }
 
+        public async Task<StudentLecture?> GetLecturesSession(int lectureId, int sessionId)
+        {
+            return await _context.StudentLectures
+                .FirstOrDefaultAsync(x => x.LecturedetailId == lectureId && x.SessionId == sessionId);
+        }
+
+        public async Task RemoveLecturesSession(StudentLecture entry)
+        {
+            _context.StudentLectures.Remove(entry);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<int>> GetLectureAssignedSessionIdsAsync(int lectureId)
+        {
+            return await _context.StudentLectures
+                .Where(x => x.LecturedetailId == lectureId)
+                .Select(x => x.SessionId)
+                .ToListAsync();
+        }
     }
 }

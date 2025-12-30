@@ -161,12 +161,13 @@ namespace StudyApp.API.Data
                         .HasOne(sl => sl.Lecturedetails)
                         .WithMany(l => l.StudentLectures)
                         .HasForeignKey(sl => sl.LecturedetailId)
-                        .OnDelete(DeleteBehavior.Restrict);  // SAFE
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade);// SAFE
 
                     // Avoid duplicate assignment for same session + lecture
                     modelBuilder.Entity<StudentLecture>()
-                        .HasIndex(sl => new { sl.SessionId, sl.LecturedetailId })
-                        .IsUnique();
+                                .HasIndex(sl => new { sl.SessionId, sl.LecturedetailId })
+                                .IsUnique();
 
 
 

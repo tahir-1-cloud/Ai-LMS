@@ -67,5 +67,28 @@ namespace StudyApp.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> UnassignFromSession([FromBody] AssignLectureDto model)
+        {
+            try
+            {
+                await _studentLectureService.UnassignLectureFromSession(model.LectureId, model.SessionId);
+                return Ok("Lecture unassigned successfully");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetLectureAssignments([FromQuery] int lectureId)
+        {
+            var sessionIds = await _studentLectureService
+                .GetLectureAssignedSessionId(lectureId);
+
+            return Ok(sessionIds.Select(id => new { sessionId = id }));
+        }
     }
 }
