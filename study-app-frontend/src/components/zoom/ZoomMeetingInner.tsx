@@ -1,13 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-const ZoomMtgEmbedded =
-  (await import('@zoom/meetingsdk/embedded')).default;
+import { useEffect } from 'react';
 
-
-const ZoomMeeting = ({
+export default function ZoomMeetingInner({
   meetingNumber,
-  password = '',
+  password,
   userName,
   role,
 }: {
@@ -15,23 +12,24 @@ const ZoomMeeting = ({
   password?: string;
   userName: string;
   role: 0 | 1;
-}) => {
-  const rootRef = useRef<HTMLDivElement>(null);
-
+}) {
   useEffect(() => {
-    const client = ZoomMtgEmbedded.createClient();
+    let client: any;
 
     const start = async () => {
+      // ⚠️ import ONLY inside effect
+      const ZoomMtgEmbedded = (await import('@zoom/meetingsdk/embedded')).default;
+
+      client = ZoomMtgEmbedded.createClient();
+
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/zoom/signature?meetingNumber=${meetingNumber}&role=${role}`
       );
 
       const { signature } = await res.json();
 
-      if (!rootRef.current) return;
-
       client.init({
-        zoomAppRoot: rootRef.current,
+        zoomAppRoot: document.getElementById('zoom-root')!,
         language: 'en-US',
       });
 
@@ -46,11 +44,12 @@ const ZoomMeeting = ({
 
     start();
 
-    // ❗ DO NOTHING ON CLEANUP
-    // Zoom handles this internally
-  }, [meetingNumber, password, userName, role]);
+    return () => {
+      try {
+        client?.leave?.();
+      } catch {}
+    };
+  }, [meetingNumber, role, password, userName]);
 
-  return <div ref={rootRef} className="h-screen w-full bg-black" />;
-};
-
-export default ZoomMeeting;
+  return <div id="zoom-root" className="h-screen w-full" />;
+}

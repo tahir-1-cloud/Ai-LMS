@@ -38,10 +38,8 @@
         public bool IsStarted { get; set; }
 
         public bool IsEnded { get; set; }
-
-        // 🔐 Admin-only fields
         public string ZoomMeetingId { get; set; } = null!;
-
+        public string StartUrl { get; set; }
         public string Password { get; set; } = null!;
     }
     public class StudentLiveClassModel

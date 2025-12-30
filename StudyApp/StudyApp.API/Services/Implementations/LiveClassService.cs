@@ -156,7 +156,8 @@ namespace StudyApp.API.Services.Implementations
                     IsStarted = x.IsStarted,
                     IsEnded = x.IsEnded,
                     ZoomMeetingId = x.ZoomMeetingId,
-                    Password = x.Password
+                    Password = x.Password,
+                    StartUrl = x.StartUrl,
                 })
                 .ToListAsync();
         }

@@ -6,6 +6,9 @@ import { ColumnsType } from 'antd/es/table';
 import { getAllSessions } from '@/services/sessionService';
 import { Session } from '@/types/session';
 import { useAdminAuth } from "@/hooks/useAdminAuth";  
+import { useRouter } from 'next/navigation';
+import { Button } from 'antd';
+
 
 export default function SessionsPage() {
     useAdminAuth();
@@ -14,6 +17,8 @@ export default function SessionsPage() {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [pageSize, setPageSize] = useState(10);
+    const router = useRouter();
+
 
     useEffect(() => {
         const fetchSessions = async () => {
@@ -45,29 +50,46 @@ export default function SessionsPage() {
     };
 
     const columns: ColumnsType<Session> = [
-        {
-            title: '#',
-            dataIndex: 'index',
-            key: 'index',
-            render: (_: unknown, __: Session, index: number) => index + 1,
-        },
-        {
-            title: 'Title',
-            dataIndex: 'title',
-            key: 'title',
-        },
-        {
-            title: 'Description',
-            dataIndex: 'description',
-            key: 'description',
-        },
-        {
-            title: 'Session Year',
-            dataIndex: 'sessionYear',
-            key: 'sessionYear',
-            render: (sessionYear: string) => new Date(sessionYear).getFullYear(),
-        },
-    ];
+    {
+        title: '#',
+        dataIndex: 'index',
+        key: 'index',
+        render: (_: unknown, __: Session, index: number) => index + 1,
+    },
+    {
+        title: 'Title',
+        dataIndex: 'title',
+        key: 'title',
+    },
+    {
+        title: 'Description',
+        dataIndex: 'description',
+        key: 'description',
+    },
+    {
+        title: 'Session Year',
+        dataIndex: 'sessionYear',
+        key: 'sessionYear',
+        render: (sessionYear: string) =>
+            new Date(sessionYear).getFullYear(),
+    },
+    {
+        title: 'Live Class',
+        key: 'liveClass',
+        align: 'center',
+        render: (_: unknown, record: Session) => (
+            <Button
+                type="primary"
+                onClick={() =>
+                    router.push(`/admin/liveclass/${record.id}`)
+                }
+            >
+                Schedule Class
+            </Button>
+        ),
+    },
+];
+
 
     return (
         <div className="min-h-screen bg-gray-50 py-10 px-6 flex justify-center">

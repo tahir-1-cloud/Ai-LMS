@@ -7,4 +7,5 @@ export interface LiveClass {
   isEnded: boolean;
   zoomMeetingId: string;
   password: string;
+  startUrl:string;
 }
