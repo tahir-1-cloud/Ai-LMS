@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StudyApp.API.Dto;
 using StudyApp.API.Models;
@@ -133,11 +134,9 @@ namespace StudyApp.API.Controllers
             }
         }
 
+
+        [AllowAnonymous]
         [HttpGet]
-
-
-        [HttpGet("{mockPaperId}")]
-
         public async Task<IActionResult> GetAllMockTests()
         {
             try

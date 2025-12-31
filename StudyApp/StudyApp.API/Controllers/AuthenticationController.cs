@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StudyApp.API.Models;
 using StudyApp.API.Services.Interfaces;
 
@@ -30,6 +32,7 @@ namespace StudyApp.API.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpPost]
         public async Task<IActionResult> LoginStudent([FromBody] LoginModel request)
         {
@@ -73,6 +76,18 @@ namespace StudyApp.API.Controllers
                     : "Student unblocked successfully"
             });
         }
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            var result = await _authenticationServices.LogoutAsync(User);
+
+            if (!result)
+                return BadRequest(new { message = "Unable to logout" });
+
+            return Ok(new { message = "Logged out successfully" });
+        }
+
 
     }
 

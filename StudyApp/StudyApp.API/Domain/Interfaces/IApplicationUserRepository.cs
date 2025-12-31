@@ -10,5 +10,9 @@ namespace StudyApp.API.Domain.Interfaces
         Task<ApplicationUser?> GetUserByEmail(string email);
         Task<ApplicationUser?> FindUserByUniqueFieldsAsync(string cnic, string email, string phone);
         Task<ApplicationUser?> FindUserByUserNameAsync(string userName);
+
+        Task<UserLogin?> GetSessionByIdAsync(long loginId);
+        Task ExpireAllSessionsAsync(long userId);
+
     }
 }

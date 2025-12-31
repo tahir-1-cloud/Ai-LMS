@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using StudyApp.API.Models;
 using StudyApp.API.Services.Interfaces;
 
@@ -21,7 +22,7 @@ namespace StudyApp.API.Controllers
             SessionModel sessionModel = await _sessionServices.AddSession(request);
             return Ok(sessionModel);
         }
-
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetSession()
         {

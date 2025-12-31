@@ -92,7 +92,7 @@ namespace StudyApp.API.Services.Implementations
             if (string.IsNullOrWhiteSpace(student.Password))
                 throw new Exception("Password is required");
 
-            ApplicationUser? applicationUser =
+            var applicationUser =
                 await _userRepository.FindUserByUserNameAsync(student.UserName);
 
             if (applicationUser == null)
@@ -104,48 +104,55 @@ namespace StudyApp.API.Services.Implementations
             if (!applicationUser.Password.Equals(student.Password))
                 throw new Exception("Invalid Credentials");
 
-            List<UserLogin> activeSessions =
+            // 🔐 enforce max 2 sessions
+            var activeSessions =
                 await _userLoginRepository.GetCurrentActiveSessionAsync(applicationUser.Id);
 
             if (activeSessions.Count >= 2)
             {
-                var sessionsToEnd = activeSessions
-                    .OrderByDescending(s => s.ExpiresAt)
+                var sessionsToExpire = activeSessions
+                    .OrderByDescending(x => x.CreatedAt)
                     .Skip(1)
                     .ToList();
 
-                foreach (var oldSession in sessionsToEnd)
+                foreach (var s in sessionsToExpire)
                 {
-                    oldSession.ExpiresAt = DateTime.UtcNow;
-                    await _userLoginRepository.UpdateAsync(oldSession);
+                    s.ExpiresAt = DateTime.UtcNow;
+                    await _userLoginRepository.UpdateAsync(s);
                 }
             }
 
-            string token = GenerateJwtToken(applicationUser);
-
             int expireMinutes = int.Parse(_config["Jwt:ExpireMinutes"]);
             var expiresAt = DateTime.UtcNow.AddMinutes(expireMinutes);
-            // Save session
+
+            // ✅ create DB session FIRST
             var session = new UserLogin
             {
                 UserId = applicationUser.Id,
-                Token = token,
-                ExpiresAt = expiresAt
+                ExpiresAt = expiresAt,
+                Token = Guid.NewGuid().ToString() // temporary junk
             };
 
             await _userLoginRepository.AddAsync(session);
+
+            // ✅ generate token WITH session id
+            var token = GenerateJwtToken(applicationUser, session.Id);
+
+            // ✅ update token in DB
+            session.Token = token;
+            await _userLoginRepository.UpdateAsync(session);
 
             return new LoginResponse
             {
                 FullName = applicationUser.FullName,
                 Session = applicationUser.Session.Title,
-                EmailAddress=applicationUser.EmailAddress,
-                CNIC=applicationUser.CNIC,
-                Token = token,
+                EmailAddress = applicationUser.EmailAddress,
+                CNIC = applicationUser.CNIC,
+                Token = token
             };
         }
 
-        private string GenerateJwtToken(ApplicationUser applicationUser)
+        private string GenerateJwtToken(ApplicationUser applicationUser, long loginId)
         {
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_config["Jwt:Key"])
@@ -155,26 +162,27 @@ namespace StudyApp.API.Services.Implementations
 
             var claims = new[]
             {
-                        new Claim(ClaimTypes.NameIdentifier, applicationUser.Id.ToString()),
-                        new Claim("fullName", applicationUser.FullName),
-                        new Claim("cnic", applicationUser.CNIC),
-                        new Claim("emailaddress", applicationUser.EmailAddress),
-                        new Claim("session", applicationUser.Session.Title),
-                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
+        new Claim(ClaimTypes.NameIdentifier, applicationUser.Id.ToString()),
+        new Claim("loginId", loginId.ToString()),   // 🔥 CRITICAL
+        new Claim("fullName", applicationUser.FullName),
+        new Claim("cnic", applicationUser.CNIC),
+        new Claim("emailaddress", applicationUser.EmailAddress),
+        new Claim("session", applicationUser.Session.Title),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+    };
 
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(
-                    int.Parse(_config["Jwt:ExpireMinutes"])),
-
-                signingCredentials: credentials);
+                    int.Parse(_config["Jwt:ExpireMinutes"])
+                ),
+                signingCredentials: credentials
+            );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
-
 
         public async Task<bool> SetStudentBlockStatusAsync(int studentId, bool isBlocked)
         {
@@ -190,7 +198,36 @@ namespace StudyApp.API.Services.Implementations
             student.IsBlocked = isBlocked;
             await _userRepository.UpdateAsync(student);
 
+            if (isBlocked)
+            {
+                await _userRepository.ExpireAllSessionsAsync(studentId);
+            }
+
             return true;
         }
+        public async Task<bool> LogoutAsync(ClaimsPrincipal user)
+        {
+            var loginIdClaim = user.FindFirst("loginId");
+
+            if (loginIdClaim == null)
+                return false;
+
+            long loginId = long.Parse(loginIdClaim.Value);
+
+            var session = await _userRepository.GetSessionByIdAsync(loginId);
+
+            if (session == null)
+                return false;
+
+            session.ExpiresAt = DateTime.UtcNow;
+            session.IsActive = false;
+
+            await _userLoginRepository.UpdateAsync(session);
+
+            return true;
+        }
+
+
+
     }
 }

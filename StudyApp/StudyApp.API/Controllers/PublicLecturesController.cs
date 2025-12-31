@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using StudyApp.API.Dto;
 using StudyApp.API.Migrations;
@@ -60,7 +61,7 @@ namespace StudyApp.API.Controllers
                 return BadRequest(ex);
             }
         }
-
+        [AllowAnonymous]
         [HttpGet]
         public async Task<IActionResult> GetAlllectures()
         {

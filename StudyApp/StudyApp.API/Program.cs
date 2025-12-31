@@ -10,6 +10,7 @@ using StudyApp.API.Domain.Interfaces;
 using StudyApp.API.Hubs;
 using StudyApp.API.Mappings;
 using StudyApp.API.Repositories;
+using StudyApp.API.Services;
 using StudyApp.API.Services.Implementations;
 using StudyApp.API.Services.Interfaces;
 using System.Text;
@@ -170,7 +171,7 @@ app.UseCors("StudyApp");
 
 app.UseAuthentication();
 app.UseAuthorization();
-
+app.UseMiddleware<SessionValidationMiddleware>();
 // SignalR hub
 app.MapHub<AttemptHub>("/hubs/attempt");
 

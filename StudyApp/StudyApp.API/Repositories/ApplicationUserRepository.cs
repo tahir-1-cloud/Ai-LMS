@@ -49,5 +49,27 @@ namespace StudyApp.API.Repositories
                 .AsNoTracking()
                 .FirstOrDefaultAsync(u => u.CNIC == userName || u.EmailAddress == userName || u.PhoneNumber == userName);
         }
+        public async Task<UserLogin?> GetSessionByIdAsync(long loginId)
+        {
+            return await _context.UserLogins
+                .FirstOrDefaultAsync(x => x.Id == loginId);
+        }
+
+        public async Task ExpireAllSessionsAsync(long userId)
+        {
+            var sessions = await _context.UserLogins
+                .Where(x => x.UserId == userId && x.ExpiresAt > DateTime.UtcNow)
+                .ToListAsync();
+
+            foreach (var session in sessions)
+            {
+                session.ExpiresAt = DateTime.UtcNow;
+                session.IsActive = false;
+            }
+
+            await _context.SaveChangesAsync();
+        }
+
+
     }
 }

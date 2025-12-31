@@ -1,5 +1,6 @@
 ﻿using StudyApp.API.Domain.Entities;
 using StudyApp.API.Models;
+using System.Security.Claims;
 
 namespace StudyApp.API.Services.Interfaces
 {
@@ -11,5 +12,7 @@ namespace StudyApp.API.Services.Interfaces
         public Task<IEnumerable<ApplicationUserModel>> GetAllStudent();
 
         Task<bool> SetStudentBlockStatusAsync(int studentId, bool isBlocked);
+        Task<bool> LogoutAsync(ClaimsPrincipal user);
+
     }
 }
