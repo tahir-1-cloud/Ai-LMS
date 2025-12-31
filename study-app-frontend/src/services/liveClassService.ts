@@ -87,3 +87,25 @@ export async function endLiveClass(id: number): Promise<void> {
     throw error;
   }
 }
+
+export const getStudentLiveClasses = async (id: number): Promise<LiveClass[]> => {
+  try {
+    const response = await axiosInstance.get<LiveClass[]>(
+      `/LiveClass/GetAllForSession/session/${id}/all`
+    );
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      console.error(
+        'Error fetching student live classes:',
+        error.response?.data || error.message
+      );
+    } else {
+      console.error(
+        'Unexpected error fetching student live classes:',
+        error
+      );
+    }
+    throw error;
+  }
+};

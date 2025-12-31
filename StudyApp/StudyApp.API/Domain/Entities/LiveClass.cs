@@ -40,6 +40,7 @@
         public bool IsEnded { get; set; }
         public string ZoomMeetingId { get; set; } = null!;
         public string StartUrl { get; set; }
+        public string JoinUrl { get; set; }
         public string Password { get; set; } = null!;
     }
     public class StudentLiveClassModel

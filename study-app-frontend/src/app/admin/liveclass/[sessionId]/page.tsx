@@ -54,34 +54,48 @@ export default function AdminLiveClasses() {
   // -------------------------
   // Create class
   // -------------------------
-  const handleCreate = async () => {
-    if (!title || !scheduledAt) {
-      toast.error('All fields are required');
-      return;
-    }
+const handleCreate = async () => {
+  if (!title || !scheduledAt) {
+    toast.error('All fields are required');
+    return;
+  }
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      await createLiveClass({
-        sessionId,
-        title,
-        scheduledAt,
-        durationMinutes: duration,
-      });
+    await createLiveClass({
+      sessionId,
+      title,
+      scheduledAt, // ✅ PK time string ONLY
+      durationMinutes: duration,
+    });
 
-      toast.success('Live class scheduled');
-      setOpen(false);
-      setTitle('');
-      setScheduledAt('');
-      setDuration(60);
-      load();
-    } catch {
-      toast.error('Failed to create class');
-    } finally {
-      setLoading(false);
-    }
-  };
+    toast.success('Live class scheduled');
+    setOpen(false);
+    setTitle('');
+    setScheduledAt('');
+    setDuration(60);
+    load();
+  } catch {
+    toast.error('Failed to create class');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+const formatPKTime = (utcString: string) => {
+  return new Date(utcString + 'Z').toLocaleString('en-PK', {
+    timeZone: 'Asia/Karachi',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+};
+
 
   // -------------------------
   // Start / End
@@ -129,9 +143,7 @@ export default function AdminLiveClasses() {
                 <td className="border p-2">{cls.title}</td>
 
                 <td className="border p-2 text-center">
-                  {new Date(cls.scheduledAt).toLocaleString('en-PK', {
-                    timeZone: 'Asia/Karachi',
-                  })}
+                  {formatPKTime(cls.scheduledAt)}
                 </td>
 
                 <td className="border p-2 text-center">

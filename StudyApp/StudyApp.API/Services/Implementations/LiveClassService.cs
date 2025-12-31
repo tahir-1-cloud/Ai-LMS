@@ -28,8 +28,9 @@ namespace StudyApp.API.Services.Implementations
             if (!sessionExists)
                 throw new Exception("Invalid SessionId");
 
-            // 2️⃣ Convert PKT → UTC
-            var pakistanTz = TimeZoneInfo.FindSystemTimeZoneById("Asia/Karachi");
+            // 2️⃣ Convert PKT → UTC (SAFE)
+            var pakistanTz = GetPakistanTimeZone();
+
             var localPkTime = DateTime.SpecifyKind(
                 model.ScheduledAt,
                 DateTimeKind.Unspecified);
@@ -40,7 +41,7 @@ namespace StudyApp.API.Services.Implementations
             var newStart = scheduledUtc;
             var newEnd = scheduledUtc.AddMinutes(model.DurationMinutes);
 
-            // 3️⃣ Prevent overlapping schedules (same session)
+            // 3️⃣ Prevent overlapping schedules
             var overlapExists = await _context.LiveClasses.AnyAsync(x =>
                 x.SessionId == model.SessionId &&
                 !x.IsEnded &&
@@ -59,7 +60,7 @@ namespace StudyApp.API.Services.Implementations
                 model.DurationMinutes
             );
 
-            // 5️⃣ Save LiveClass (UTC)
+            // 5️⃣ Save (UTC ONLY)
             var entity = new LiveClass
             {
                 SessionId = model.SessionId,
@@ -80,6 +81,20 @@ namespace StudyApp.API.Services.Implementations
             _context.LiveClasses.Add(entity);
             await _context.SaveChangesAsync();
         }
+        private static TimeZoneInfo GetPakistanTimeZone()
+        {
+            try
+            {
+                // Linux / Docker / Cloud
+                return TimeZoneInfo.FindSystemTimeZoneById("Asia/Karachi");
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                // Windows
+                return TimeZoneInfo.FindSystemTimeZoneById("Pakistan Standard Time");
+            }
+        }
+
 
         public async Task StartLiveClassAsync(int liveClassId)
         {
@@ -142,10 +157,23 @@ namespace StudyApp.API.Services.Implementations
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<List<LiveClassModel>> GetLiveClassesForSessionAsync(int sessionId)
+        public async Task<List<LiveClassModel>> GetLiveClassesForSessionAsync(int sessionId, int studentId)
         {
+            // 1️⃣ Get student's session
+            var sessionIdnew = await _context.ApplicationUsers
+                .Where(se => se.Id == studentId && !se.IsDeleted)
+                .Select(se => se.SessionId)
+                .FirstOrDefaultAsync();
+
+            if (sessionIdnew == 0)
+                throw new Exception("Student is not enrolled in any session");
+
+            // 2️⃣ Fetch live classes for that session
             return await _context.LiveClasses
-                .Where(x => x.SessionId == sessionId)
+                .Where(x =>
+                    x.SessionId == sessionIdnew &&
+                    !x.IsDeleted &&
+                    x.IsActive)
                 .OrderBy(x => x.ScheduledAt)
                 .Select(x => new LiveClassModel
                 {
@@ -155,9 +183,9 @@ namespace StudyApp.API.Services.Implementations
                     DurationMinutes = x.DurationMinutes,
                     IsStarted = x.IsStarted,
                     IsEnded = x.IsEnded,
-                    ZoomMeetingId = x.ZoomMeetingId,
-                    Password = x.Password,
-                    StartUrl = x.StartUrl,
+
+                    // Students ONLY need Join URL
+                    JoinUrl = x.JoinUrl
                 })
                 .ToListAsync();
         }

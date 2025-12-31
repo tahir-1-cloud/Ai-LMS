@@ -5,6 +5,7 @@ using StudyApp.API.Dto;
 using StudyApp.API.Models;
 using StudyApp.API.Services.Implementations;
 using StudyApp.API.Services.Interfaces;
+using System.Security.Claims;
 
 namespace StudyApp.API.Controllers
 {
@@ -59,7 +60,11 @@ namespace StudyApp.API.Controllers
         [HttpGet("session/{sessionId}/all")]
         public async Task<IActionResult> GetAllForSession(int sessionId)
         {
-            var result = await _service.GetLiveClassesForSessionAsync(sessionId);
+            int studentId = int.Parse(
+                            User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                            ?? throw new UnauthorizedAccessException("User id not found in token")
+                        );
+            var result = await _service.GetLiveClassesForSessionAsync(sessionId,studentId);
             return Ok(result);
         }
 
