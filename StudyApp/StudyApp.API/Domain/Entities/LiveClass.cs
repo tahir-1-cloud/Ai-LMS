@@ -2,7 +2,7 @@
 {
     public class LiveClass : AuditEntity
     {
-        public long Id { get; set; }
+        public int Id { get; set; }
         public int SessionId { get; set; }
         public string Title { get; set; }
         public string ZoomMeetingId { get; set; }

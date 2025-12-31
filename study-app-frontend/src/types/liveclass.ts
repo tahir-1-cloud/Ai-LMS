@@ -8,4 +8,5 @@ export interface LiveClass {
   zoomMeetingId: string;
   password: string;
   startUrl:string;
+  joinUrl: string;
 }

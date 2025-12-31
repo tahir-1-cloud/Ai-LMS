@@ -14,7 +14,6 @@ import {
 } from '@/services/liveClassService';
 
 import { LiveClass } from '@/types/liveclass';
-import ZoomClientOnly from '@/components/zoom/ZoomClientOnly';
 
 import ComponentCard from '@/components/common/ComponentCard';
 import Label from '@/components/form/Label';
@@ -27,29 +26,37 @@ export default function AdminLiveClasses() {
   const sessionId = Number(params.sessionId);
 
   const [liveClasses, setLiveClasses] = useState<LiveClass[]>([]);
-  const [activeClass, setActiveClass] = useState<LiveClass | null>(null);
-
   const [open, setOpen] = useState(false);
+
   const [title, setTitle] = useState('');
   const [scheduledAt, setScheduledAt] = useState('');
   const [duration, setDuration] = useState<number>(60);
   const [loading, setLoading] = useState(false);
 
+  // -------------------------
+  // Load classes
+  // -------------------------
   const load = async () => {
-    const data = await getSessionLiveClasses(sessionId);
-    setLiveClasses(data);
+    try {
+      const data = await getSessionLiveClasses(sessionId);
+      setLiveClasses(data);
+    } catch {
+      toast.error('Failed to load live classes');
+    }
   };
 
   useEffect(() => {
-    if (!isNaN(sessionId)) load();
+    if (!isNaN(sessionId)) {
+      load();
+    }
   }, [sessionId]);
 
-  // ------------------------
+  // -------------------------
   // Create class
-  // ------------------------
+  // -------------------------
   const handleCreate = async () => {
     if (!title || !scheduledAt) {
-      toast.error('All fields required');
+      toast.error('All fields are required');
       return;
     }
 
@@ -76,37 +83,24 @@ export default function AdminLiveClasses() {
     }
   };
 
-  // ------------------------
+  // -------------------------
   // Start / End
-  // ------------------------
+  // -------------------------
   const handleStart = async (cls: LiveClass) => {
     await startLiveClass(cls.id);
-    toast.success('Class started');
+    toast.success('Live class started');
     load();
   };
 
   const handleEnd = async (id: number) => {
     await endLiveClass(id);
-    setActiveClass(null);
+    toast.success('Live class ended');
     load();
   };
 
-  // ------------------------
-  // HOST VIEW (SDK)
-  // ------------------------
-  if (activeClass) {
-    return (
-      <ZoomClientOnly
-        meetingNumber={activeClass.zoomMeetingId}
-        password={activeClass.password}
-        userName="Admin"
-        role={1} // HOST
-      />
-    );
-  }
-
   return (
     <ComponentCard title="Live Classes">
+      {/* Header */}
       <div className="flex justify-end mb-4">
         <button
           onClick={() => setOpen(true)}
@@ -116,80 +110,87 @@ export default function AdminLiveClasses() {
         </button>
       </div>
 
-      <table className="w-full border">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="border p-2">Title</th>
-            <th className="border p-2">Schedule</th>
-            <th className="border p-2">Duration</th>
-            <th className="border p-2">Status</th>
-            <th className="border p-2">Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {liveClasses.map((cls) => (
-            <tr key={cls.id}>
-              <td className="border p-2">{cls.title}</td>
-
-              <td className="border p-2 text-center">
-                {new Date(cls.scheduledAt).toLocaleString('en-PK', {
-                  timeZone: 'Asia/Karachi',
-                })}
-              </td>
-
-              <td className="border p-2 text-center">
-                {cls.durationMinutes} min
-              </td>
-
-              <td className="border p-2 text-center">
-                {cls.isEnded
-                  ? 'Ended'
-                  : cls.isStarted
-                  ? 'Running'
-                  : 'Scheduled'}
-              </td>
-
-              <td className="border p-2 text-center space-x-2">
-                {!cls.isStarted && !cls.isEnded && (
-                  <button
-                    onClick={() => handleStart(cls)}
-                    className="bg-green-500 px-3 py-1 text-white rounded"
-                  >
-                    Start
-                  </button>
-                )}
-
-                {cls.isStarted && !cls.isEnded && (
-                  <>
-                    <button
-                      onClick={() => setActiveClass(cls)}
-                      className="bg-blue-500 px-3 py-1 text-white rounded"
-                    >
-                      Join
-                    </button>
-
-                    <button
-                      onClick={() => handleEnd(cls.id)}
-                      className="bg-red-500 px-3 py-1 text-white rounded"
-                    >
-                      End
-                    </button>
-                  </>
-                )}
-              </td>
-            </tr>
-          ))}
-
-          {liveClasses.length === 0 && (
+      {/* Table */}
+      <div className="overflow-x-auto">
+        <table className="w-full border">
+          <thead className="bg-gray-100">
             <tr>
-              <td colSpan={5} className="text-center p-4 text-gray-500">
-                No live classes scheduled
-              </td>
+              <th className="border p-2 text-left">Title</th>
+              <th className="border p-2 text-center">Schedule</th>
+              <th className="border p-2 text-center">Duration</th>
+              <th className="border p-2 text-center">Status</th>
+              <th className="border p-2 text-center">Actions</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+
+          <tbody>
+            {liveClasses.map((cls) => (
+              <tr key={cls.id}>
+                <td className="border p-2">{cls.title}</td>
+
+                <td className="border p-2 text-center">
+                  {new Date(cls.scheduledAt).toLocaleString('en-PK', {
+                    timeZone: 'Asia/Karachi',
+                  })}
+                </td>
+
+                <td className="border p-2 text-center">
+                  {cls.durationMinutes} min
+                </td>
+
+                <td className="border p-2 text-center">
+                  {cls.isEnded
+                    ? 'Ended'
+                    : cls.isStarted
+                    ? 'Running'
+                    : 'Scheduled'}
+                </td>
+
+                <td className="border p-2 text-center space-x-2">
+                  {/* Scheduled */}
+                  {!cls.isStarted && !cls.isEnded && (
+                    <button
+                      onClick={() => handleStart(cls)}
+                      className="bg-green-500 px-3 py-1 text-white rounded"
+                    >
+                      Start
+                    </button>
+                  )}
+
+                  {/* Running */}
+                  {cls.isStarted && !cls.isEnded && (
+                    <>
+                      <a
+                        href={cls.startUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-blue-500 px-3 py-1 text-white rounded inline-block"
+                      >
+                        Join (Host)
+                      </a>
+
+                      <button
+                        onClick={() => handleEnd(cls.id)}
+                        className="bg-red-500 px-3 py-1 text-white rounded"
+                      >
+                        End
+                      </button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+
+            {liveClasses.length === 0 && (
+              <tr>
+                <td colSpan={5} className="text-center p-4 text-gray-500">
+                  No live classes scheduled
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
 
       {/* Modal */}
       <Modal
