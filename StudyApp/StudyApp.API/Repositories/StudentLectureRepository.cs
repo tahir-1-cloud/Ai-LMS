@@ -2,6 +2,7 @@
 using StudyApp.API.Data;
 using StudyApp.API.Domain.Entities;
 using StudyApp.API.Domain.Interfaces;
+using StudyApp.API.Dto;
 using StudyApp.API.Models;
 
 namespace StudyApp.API.Repositories
@@ -67,6 +68,40 @@ namespace StudyApp.API.Repositories
             return await _context.StudentLectures
                 .Where(x => x.LecturedetailId == lectureId)
                 .Select(x => x.SessionId)
+                .ToListAsync();
+        }
+
+        public async Task DeleteLecturesAsync(int lectureId)
+        {
+            var lecture = await _context.Lecturedetails.FirstOrDefaultAsync(p => p.Id == lectureId);
+
+            if (lecture == null)
+            {
+                throw new KeyNotFoundException($"Lecture with id {lectureId} not found.");
+            }
+
+            _context.Lecturedetails.Remove(lecture);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<List<AssignedLectureDto>> GetAssignedLecturesAsync(int sessionId)
+        {
+            return await _context.StudentLectures
+                .Where(sl => sl.SessionId == sessionId)
+                .Include(sl => sl.Lecturedetails)
+                .Include(sl => sl.Session)
+                .Select(sl => new AssignedLectureDto
+                {
+                    LectureId = sl.LecturedetailId,
+                    LectureTitle = sl.Lecturedetails.Title,
+                    Description = sl.Lecturedetails.Description,
+                    VideoUrl = sl.Lecturedetails.VideoUrl,
+                    ThumbnailUrl = sl.Lecturedetails.ThumbnailUrl,
+
+                    SessionId = sl.SessionId,
+                    SessionTitle = sl.Session.Title,
+                    AssignedAt= sl.AssignedAt
+                })
                 .ToListAsync();
         }
     }

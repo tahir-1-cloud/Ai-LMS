@@ -16,5 +16,9 @@ namespace StudyApp.API.Services.Interfaces
         Task UnassignLectureFromSession(int lectureId, int sessionId);
 
         Task<List<int>> GetLectureAssignedSessionId(int lectureId);
+
+        Task DeleteLecture(int lectureId);
+
+        Task<List<AssignedLectureDto>> GetAssignedLectures(int sessionId);
     }
 }

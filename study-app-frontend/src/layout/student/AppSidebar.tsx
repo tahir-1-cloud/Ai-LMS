@@ -18,7 +18,7 @@ const navItems: NavItem[] = [
     {
         icon: <Squares2X2Icon  className="w-5 h-5"/>,
         name: "Lectures",
-        path: "/student/livelectures/listing",
+        path: "/student/lectures/list",
     },
     {
         icon: <CalendarDaysIcon  className="w-5 h-5"/>,

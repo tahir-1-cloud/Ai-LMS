@@ -90,5 +90,38 @@ namespace StudyApp.API.Controllers
 
             return Ok(sessionIds.Select(id => new { sessionId = id }));
         }
+
+
+        [HttpDelete("{lectureId}")]
+        public async Task<IActionResult> DeleteLecturesLinkwithstudents(int lectureId)
+        {
+            try
+            {
+                await _studentLectureService.DeleteLecture(lectureId);
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                // log ex if you have logger
+                return BadRequest(ex.Message);
+            }
+        }
+
+        //show lectures to students
+
+        [HttpGet]
+        public async Task<IActionResult> GetAssignedLectures()
+        {
+           
+            int sessionId = int.Parse(User.FindFirst("sessionId")!.Value);
+
+            var lectures = await _studentLectureService.GetAssignedLectures(sessionId);
+
+            return Ok(lectures);
+        }
     }
 }

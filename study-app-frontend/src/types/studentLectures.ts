@@ -13,3 +13,15 @@ export interface LectureDetailsResponseDto{
     videoUrl: string;
     createdAt?:Date;
 }
+
+export interface AssignedLectureDto{
+    lectureId:number;
+    lectureTitle: string;
+    description: string;
+    thumbnailUrl: string;
+    videoUrl: string;
+    sessionId:number;
+    sessionTitle:string;
+    assignedAt?:Date;
+}
+ 

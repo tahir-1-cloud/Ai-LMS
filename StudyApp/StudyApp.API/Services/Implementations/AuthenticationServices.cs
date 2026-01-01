@@ -162,14 +162,15 @@ namespace StudyApp.API.Services.Implementations
 
             var claims = new[]
             {
-        new Claim(ClaimTypes.NameIdentifier, applicationUser.Id.ToString()),
-        new Claim("loginId", loginId.ToString()),   // 🔥 CRITICAL
-        new Claim("fullName", applicationUser.FullName),
-        new Claim("cnic", applicationUser.CNIC),
-        new Claim("emailaddress", applicationUser.EmailAddress),
-        new Claim("session", applicationUser.Session.Title),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-    };
+                        new Claim(ClaimTypes.NameIdentifier, applicationUser.Id.ToString()),
+                        new Claim("fullName", applicationUser.FullName),
+                        new Claim("cnic", applicationUser.CNIC),
+                        new Claim("emailaddress", applicationUser.EmailAddress),
+                         new Claim("sessionId", applicationUser.SessionId.ToString()),
+                        new Claim("session", applicationUser.Session.Title),
+
+                        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
 
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],

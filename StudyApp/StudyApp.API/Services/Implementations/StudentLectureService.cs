@@ -119,5 +119,15 @@ namespace StudyApp.API.Services.Implementations
 
             return await _StudentLectureRepository.GetLectureAssignedSessionIdsAsync(lectureId);
         }
+
+        public async Task DeleteLecture(int lectureId)
+        {
+            await _StudentLectureRepository.DeleteLecturesAsync(lectureId);
+        }
+
+        public async Task<List<AssignedLectureDto>> GetAssignedLectures(int sessionId)
+        {
+            return await _StudentLectureRepository.GetAssignedLecturesAsync(sessionId);
+        }
     }
 }

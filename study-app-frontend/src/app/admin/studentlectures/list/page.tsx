@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Table, Input, Select, Modal, Button, Space, Spin, Alert, Popconfirm, message } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { getAllstudentLectures, assignLectureToSession,unassignPaperFromSession
-  ,getLectureAssignments } from '@/services/studentLectureServices';
+  ,getLectureAssignments ,deletelectures} from '@/services/studentLectureServices';
 import { LectureDetailsResponseDto } from '@/types/studentLectures';
 import type { Session } from '@/types/session';
 import { TeamOutlined } from '@ant-design/icons';
@@ -60,6 +60,26 @@ export default function StudentLecturesPage() {
     );
   };
 
+const handleDeleteLecture = async (lectureId: number) => {
+  try {
+    await deletelectures(lectureId);
+    toast.success("Lecture deleted successfully");
+
+    // remove from state
+    const updated = lectures.filter(l => l.id !== lectureId);
+    setLectures(updated);
+    setFilteredLectures(updated.filter(l =>
+      l.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      l.description.toLowerCase().includes(searchTerm.toLowerCase())
+    ));
+  } catch (error: any) {
+    toast.error("Failed deleting lecture");
+    const msg = error?.response?.data ?? error?.message ?? 'Failed to delete lecture';
+    message.error(typeof msg === 'string' ? msg : 'Failed to delete lecture');
+  }
+};
+
+ 
 const openAssignModal = async (lecture: LectureDetailsResponseDto) => {
   setAssignLecture(lecture);
   setAssignModalVisible(true);
@@ -134,21 +154,37 @@ const openAssignModal = async (lecture: LectureDetailsResponseDto) => {
         </Button>
       ),
     },
-    {
-      title: 'Action',
-      width: 160,
-      render: (_, record) => (
-        <Space>
-          <Button
-            size="small"
-            icon={<TeamOutlined />}
-            onClick={() => openAssignModal(record)}
-          >
-            Assign
-          </Button>
-        </Space>
-      ),
-    },
+      {
+        title: 'Action',
+        width: 220,
+        render: (_, record) => (
+          <Space>
+            {/* Assign */}
+            <Button
+              size="small"
+              icon={<TeamOutlined />}
+              onClick={() => openAssignModal(record)}
+            >
+              Assign
+            </Button>
+
+            {/* Delete */}
+            <Popconfirm
+              title="Delete lecture?"
+              description="This will permanently delete the lecture and its assignments. Are you sure?"
+              okText="Delete"
+              cancelText="Cancel"
+              onConfirm={() => handleDeleteLecture(Number(record.id))}
+              getPopupContainer={() => document.body}
+            >
+              <Button danger size="small">
+                Delete
+              </Button>
+            </Popconfirm>
+          </Space>
+        ),
+      }
+
   ];
 
   return (

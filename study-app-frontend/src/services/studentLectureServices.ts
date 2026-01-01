@@ -1,5 +1,5 @@
 
-import {LectureDetailsResponseDto} from "@/types/studentLectures";
+import {LectureDetailsResponseDto,AssignedLectureDto} from "@/types/studentLectures";
 import axiosInstance from "@/services/axiosInstance";
 import axios from "axios";
 
@@ -49,4 +49,27 @@ export const getLectureAssignments = async (
 
   // return only session ids
   return res.data.map(x => x.sessionId);
+};
+
+export const deletelectures = async (lectureId: number): Promise<void> => {
+    try {
+        await axiosInstance.delete(`/StudentLectures/DeleteLecturesLinkwithstudents/${lectureId}`);
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            console.error("Error deleting Lectures:", error.response?.data || error.message);
+        } else {
+            console.error("Unexpected error deleting Lectures:", error);
+        }
+        throw error;
+    }
+};
+
+export const getAssignedLectures = async (): Promise<AssignedLectureDto[]> => {
+  try {
+    const response = await axiosInstance.get<AssignedLectureDto[]>('/StudentLectures/GetAssignedLectures');
+    return response.data;
+  } catch (error: unknown) {
+    console.error('Error fetching assigned lectures:', error);
+    throw error;
+  }
 };
