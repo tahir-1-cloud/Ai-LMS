@@ -16,15 +16,27 @@ namespace StudyApp.API.Services
 
         public async Task InvokeAsync(HttpContext context, ApplicationDbContext db)
         {
-            var endpoint = context.GetEndpoint();
-            if (endpoint?.Metadata?.GetMetadata<AllowAnonymousAttribute>() != null)
+            if (context.Request.Method == HttpMethods.Options)
             {
                 await _next(context);
                 return;
             }
 
-            var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var loginId = context.User.FindFirstValue("loginId");
+            var endpoint = context.GetEndpoint();
+
+            if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
+            {
+                await _next(context);
+                return;
+            }
+            if (!context.User.Identity?.IsAuthenticated ?? true)
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return;
+            }
+
+            var userId = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var loginId = context.User.FindFirst("loginId")?.Value;
 
             if (userId == null || loginId == null)
             {
@@ -32,13 +44,13 @@ namespace StudyApp.API.Services
                 return;
             }
 
-            var validSession = await db.UserLogins.AnyAsync(x =>
+            var isValid = await db.UserLogins.AnyAsync(x =>
                 x.Id == long.Parse(loginId) &&
                 x.UserId == long.Parse(userId) &&
                 x.ExpiresAt > DateTime.UtcNow &&
                 x.IsActive);
 
-            if (!validSession)
+            if (!isValid)
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 await context.Response.WriteAsync("Session expired or logged out");

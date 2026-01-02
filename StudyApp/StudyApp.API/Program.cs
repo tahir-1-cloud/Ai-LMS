@@ -172,10 +172,9 @@ app.UseCors("StudyApp");
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<SessionValidationMiddleware>();
-// SignalR hub
-app.MapHub<AttemptHub>("/hubs/attempt");
 
 // Controllers
 app.MapControllers();
-
+// SignalR hub
+app.MapHub<AttemptHub>("/hubs/attempt");
 app.Run();
