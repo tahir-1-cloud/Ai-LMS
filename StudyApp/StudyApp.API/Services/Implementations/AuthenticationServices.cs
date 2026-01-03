@@ -110,17 +110,13 @@ namespace StudyApp.API.Services.Implementations
 
             if (activeSessions.Count >= 2)
             {
-                var sessionsToExpire = activeSessions
-                    .OrderByDescending(x => x.CreatedAt)
-                    .Skip(1)
-                    .ToList();
+                // Expire ONLY the oldest session
+                var oldestSession = activeSessions.First();
 
-                foreach (var s in sessionsToExpire)
-                {
-                    s.ExpiresAt = DateTime.UtcNow;
-                    await _userLoginRepository.UpdateAsync(s);
-                }
+                oldestSession.ExpiresAt = DateTime.UtcNow;
+                await _userLoginRepository.UpdateAsync(oldestSession);
             }
+
 
             int expireMinutes = int.Parse(_config["Jwt:ExpireMinutes"]);
             var expiresAt = DateTime.UtcNow.AddMinutes(expireMinutes);
@@ -162,14 +158,14 @@ namespace StudyApp.API.Services.Implementations
 
             var claims = new[]
             {
-        new Claim(ClaimTypes.NameIdentifier, applicationUser.Id.ToString()),
-        new Claim("loginId", loginId.ToString()),   // 🔥 CRITICAL
-        new Claim("fullName", applicationUser.FullName),
-        new Claim("cnic", applicationUser.CNIC),
-        new Claim("emailaddress", applicationUser.EmailAddress),
-        new Claim("session", applicationUser.Session.Title),
-        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-    };
+                new Claim(ClaimTypes.NameIdentifier, applicationUser.Id.ToString()),
+                new Claim("loginId", loginId.ToString()),   // 🔥 CRITICAL
+                new Claim("fullName", applicationUser.FullName),
+                new Claim("cnic", applicationUser.CNIC),
+                new Claim("emailaddress", applicationUser.EmailAddress),
+                new Claim("session", applicationUser.Session.Title),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
 
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
