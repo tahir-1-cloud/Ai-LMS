@@ -6,4 +6,8 @@
         public string Description { get; set; }
         public DateTime SessionYear { get; set; }
     }
+    public class BlockSessionRequest
+    {
+        public int SessionId { get; set; }
+    }
 }

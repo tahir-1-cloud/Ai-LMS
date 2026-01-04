@@ -99,7 +99,7 @@ namespace StudyApp.API.Services.Implementations
                 throw new Exception("Invalid Credentials");
 
             if (applicationUser.IsBlocked)
-                throw new Exception("Your account is blocked. Please contact administration office");
+                throw new Exception("Account blocked. Please contact the administration.");
 
             if (!applicationUser.Password.Equals(student.Password))
                 throw new Exception("Invalid Credentials");

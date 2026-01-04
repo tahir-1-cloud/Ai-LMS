@@ -29,5 +29,14 @@ namespace StudyApp.API.Repositories
             _context.Set<T>().Update(entity);
             await _context.SaveChangesAsync();
         }
+        public async Task<T?> GetByIdAsync(int id)
+        {
+            return await _context.Set<T>().FindAsync(id);
+        }
+        public async Task UpdateRangeAsync(IEnumerable<T> entities)
+        {
+            _context.Set<T>().UpdateRange(entities);
+            await _context.SaveChangesAsync();
+        }
     }
 }

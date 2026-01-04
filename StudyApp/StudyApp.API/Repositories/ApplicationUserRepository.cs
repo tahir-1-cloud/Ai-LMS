@@ -15,6 +15,13 @@ namespace StudyApp.API.Repositories
         {
             return await _context.ApplicationUsers.FirstOrDefaultAsync(x => x.Id == studentId);
         }
+        public async Task<List<ApplicationUser>> GetUsersBySessionIdAsync(int sessionId)
+        {
+            return await _context.ApplicationUsers
+                .Where(x => x.SessionId == sessionId)
+                .ToListAsync();
+        }
+
 
         public async Task<ApplicationUser?> GetUserByCNIC(string cnic)
         {
@@ -45,10 +52,13 @@ namespace StudyApp.API.Repositories
         public async Task<ApplicationUser?> FindUserByUserNameAsync(string userName)
         {
             return await _context.ApplicationUsers
-                .Include(u => u.Session)
-                .AsNoTracking()
-                .FirstOrDefaultAsync(u => u.CNIC == userName || u.EmailAddress == userName || u.PhoneNumber == userName);
+                .IgnoreQueryFilters()   // 🔥 IMPORTANT
+                .FirstOrDefaultAsync(x =>
+                    x.CNIC == userName ||
+                    x.EmailAddress == userName ||
+                    x.PhoneNumber == userName);
         }
+
         public async Task<UserLogin?> GetSessionByIdAsync(long loginId)
         {
             return await _context.UserLogins
