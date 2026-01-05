@@ -34,7 +34,7 @@ export async function getSessionLiveClasses(
 ): Promise<LiveClass[]> {
   try {
     const response = await axiosInstance.get<LiveClass[]>(
-      `/LiveClass/GetAllForSession/session/${sessionId}/all`
+      `/LiveClass/GetAllForSession_Admin/admin/session/${sessionId}/all`
     );
     return response.data;
   } catch (error: unknown) {

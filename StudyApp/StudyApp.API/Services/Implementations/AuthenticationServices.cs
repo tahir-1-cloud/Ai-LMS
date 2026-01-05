@@ -99,7 +99,7 @@ namespace StudyApp.API.Services.Implementations
                 throw new Exception("Invalid Credentials");
 
             if (applicationUser.IsBlocked)
-                throw new Exception("Your account is blocked. Please contact administration office");
+                throw new Exception("Account blocked. Please contact the administration.");
 
             if (!applicationUser.Password.Equals(student.Password))
                 throw new Exception("Invalid Credentials");
@@ -110,17 +110,13 @@ namespace StudyApp.API.Services.Implementations
 
             if (activeSessions.Count >= 2)
             {
-                var sessionsToExpire = activeSessions
-                    .OrderByDescending(x => x.CreatedAt)
-                    .Skip(1)
-                    .ToList();
+                // Expire ONLY the oldest session
+                var oldestSession = activeSessions.First();
 
-                foreach (var s in sessionsToExpire)
-                {
-                    s.ExpiresAt = DateTime.UtcNow;
-                    await _userLoginRepository.UpdateAsync(s);
-                }
+                oldestSession.ExpiresAt = DateTime.UtcNow;
+                await _userLoginRepository.UpdateAsync(oldestSession);
             }
+
 
             int expireMinutes = int.Parse(_config["Jwt:ExpireMinutes"]);
             var expiresAt = DateTime.UtcNow.AddMinutes(expireMinutes);

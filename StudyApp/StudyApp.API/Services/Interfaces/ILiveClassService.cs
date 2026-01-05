@@ -11,6 +11,7 @@ namespace StudyApp.API.Services.Interfaces
         Task EndLiveClassAsync(int liveClassId);
         Task<StudentLiveClassModel?> GetActiveLiveClassForSession(int sessionId);
         Task<List<LiveClassModel>> GetLiveClassesForSessionAsync(int sessionId,int studentId);
+        Task<List<LiveClassModel>> GetLiveClassesForSession_Admin(int sessionId);
 
     }
 

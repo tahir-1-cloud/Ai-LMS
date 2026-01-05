@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Table, Input, Select } from 'antd';
+import { Table, Input, Select,Popconfirm,message  } from 'antd';
 import { ColumnsType } from 'antd/es/table';
 import { getAllSessions } from '@/services/sessionService';
 import { Session } from '@/types/session';
 import { useAdminAuth } from "@/hooks/useAdminAuth";  
 import { useRouter } from 'next/navigation';
 import { Button } from 'antd';
+import { blockSession } from '@/services/sessionService';
+
 
 
 export default function SessionsPage() {
@@ -48,6 +50,21 @@ export default function SessionsPage() {
         );
         setFilteredSessions(filtered);
     };
+    const handleDelete = async (id: number) => {
+    try {
+        await blockSession(id);
+
+        message.success('Session blocked successfully');
+
+        // Update UI instantly
+        const updated = sessions.filter((s) => s.id !== id);
+        setSessions(updated);
+        setFilteredSessions(updated);
+    } catch (error) {
+        console.error(error);
+        message.error('Failed to block session');
+    }
+    };
 
     const columns: ColumnsType<Session> = [
     {
@@ -74,20 +91,34 @@ export default function SessionsPage() {
             new Date(sessionYear).getFullYear(),
     },
     {
-        title: 'Live Class',
-        key: 'liveClass',
+        title: 'Actions',
+        key: 'actions',
         align: 'center',
         render: (_: unknown, record: Session) => (
+            <div className="flex gap-2 justify-center">
+            {/* Existing Live Class Button */}
             <Button
                 type="primary"
-                onClick={() =>
-                    router.push(`/admin/liveclass/${record.id}`)
-                }
+                onClick={() => router.push(`/admin/liveclass/${record.id}`)}
             >
                 Schedule Class
             </Button>
+
+            {/* Delete / Block Button */}
+            <Popconfirm
+                title="Block Session"
+                description="Are you sure you want to block this session?"
+                okText="Yes"
+                cancelText="No"
+                onConfirm={() => handleDelete(record.id)}
+            >
+                <Button danger>
+                Delete
+                </Button>
+            </Popconfirm>
+            </div>
         ),
-    },
+        },
 ];
 
 

@@ -67,6 +67,11 @@ namespace StudyApp.API.Controllers
             var result = await _service.GetLiveClassesForSessionAsync(sessionId,studentId);
             return Ok(result);
         }
-
+        [HttpGet("admin/session/{sessionId}/all")]
+        public async Task<IActionResult> GetAllForSession_Admin(int sessionId)
+        {
+            var result = await _service.GetLiveClassesForSession_Admin(sessionId);
+            return Ok(result);
+        }
     }
 }

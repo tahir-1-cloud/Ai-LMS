@@ -14,12 +14,14 @@ namespace StudyApp.API.Services.Implementations
     public class StudentLectureService:IStudentLectureService
     {
         private readonly IStudentLectureRepository _StudentLectureRepository;
-        private readonly CloudinaryDotNet.Cloudinary _cloudinary;
+        //private readonly CloudinaryDotNet.Cloudinary _cloudinary;
+        private readonly IFileStorageService _fileStorage;
 
-        public StudentLectureService(IStudentLectureRepository studentLectureRepository, CloudinaryDotNet.Cloudinary cloudinary)
+        public StudentLectureService(IStudentLectureRepository studentLectureRepository,IFileStorageService fileStorage  /* CloudinaryDotNet.Cloudinary cloudinary*/)
         {
             _StudentLectureRepository = studentLectureRepository;
-            _cloudinary = cloudinary;
+            //_cloudinary = cloudinary;
+            _fileStorage = fileStorage;
         }
 
 
@@ -30,10 +32,10 @@ namespace StudyApp.API.Services.Implementations
             if (model.Video == null) throw new ArgumentException("Video is required", nameof(model.Video));
 
             // Upload thumbnail (image)
-            var thumbnailUrl = await UploadImageAsync(model.Thumbnail, "lecture_thumbnails");
+            var thumbnailUrl = await _fileStorage.UploadAsync(model.Thumbnail);
 
             // Upload video
-            var videoUrl = await UploadVideoAsync(model.Video, "lecture_videos");
+            var videoUrl = await _fileStorage.UploadAsync(model.Video);
 
             var lecture = new Lecturedetails
             {
@@ -49,44 +51,44 @@ namespace StudyApp.API.Services.Implementations
             await _StudentLectureRepository.AddAsync(lecture);
         }
 
-        private async Task<string> UploadImageAsync(IFormFile file, string folder)
-        {
-            if (file == null || file.Length == 0)
-                return null;
+        //private async Task<string> UploadImageAsync(IFormFile file, string folder)
+        //{
+        //    if (file == null || file.Length == 0)
+        //        return null;
 
-            await using var stream = file.OpenReadStream();
+        //    await using var stream = file.OpenReadStream();
 
-            var uploadParams = new ImageUploadParams
-            {
-                File = new FileDescription(file.FileName, stream),
-                Folder = folder,
-                UseFilename = true,
-                UniqueFilename = true
-            };
+        //    var uploadParams = new ImageUploadParams
+        //    {
+        //        File = new FileDescription(file.FileName, stream),
+        //        Folder = folder,
+        //        UseFilename = true,
+        //        UniqueFilename = true
+        //    };
 
-            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-            return uploadResult.SecureUrl?.ToString();
-        }
+        //    var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+        //    return uploadResult.SecureUrl?.ToString();
+        //}
 
 
-        private async Task<string> UploadVideoAsync(IFormFile file, string folder)
-        {
-            if (file == null || file.Length == 0)
-                return null;
+        //private async Task<string> UploadVideoAsync(IFormFile file, string folder)
+        //{
+        //    if (file == null || file.Length == 0)
+        //        return null;
 
-            await using var stream = file.OpenReadStream();
+        //    await using var stream = file.OpenReadStream();
 
-            var uploadParams = new VideoUploadParams
-            {
-                File = new FileDescription(file.FileName, stream),
-                Folder = folder,
-                UseFilename = true,
-                UniqueFilename = true
-            };
+        //    var uploadParams = new VideoUploadParams
+        //    {
+        //        File = new FileDescription(file.FileName, stream),
+        //        Folder = folder,
+        //        UseFilename = true,
+        //        UniqueFilename = true
+        //    };
 
-            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-            return uploadResult.SecureUrl?.ToString();
-        }
+        //    var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+        //    return uploadResult.SecureUrl?.ToString();
+        //}
 
         //Get Lectures Service
 

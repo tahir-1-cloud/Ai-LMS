@@ -15,3 +15,9 @@ export const addSession = async (session: Session) => {
     const response = await axiosInstance.post(`/Session/AddSession`, session);
     return response.data;
 };
+
+export const blockSession = async (sessionId: number): Promise<void> => {
+  await axiosInstance.post('/Session/BlockSession', {
+    sessionId,
+  });
+};

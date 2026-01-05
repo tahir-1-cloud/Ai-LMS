@@ -9,5 +9,6 @@ namespace StudyApp.API.Services.Interfaces
         Task<IEnumerable<SessionModel>> GetSessions();
 
         Task<IEnumerable<SessionModel>> GetActiveSessions();
+        Task BlockSessionAsync(int sessionId);
     }
 }

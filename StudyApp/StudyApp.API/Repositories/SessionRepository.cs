@@ -15,5 +15,11 @@ namespace StudyApp.API.Repositories
         {
             return await _context.Sessions.Where(x => x.IsActive).ToListAsync();
         }
+        public async Task<List<ApplicationUser>> GetUsersBySessionIdAsync(int sessionId)
+        {
+            return await _context.ApplicationUsers
+                .Where(x => x.SessionId == sessionId)
+                .ToListAsync();
+        }
     }
 }

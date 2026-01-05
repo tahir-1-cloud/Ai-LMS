@@ -190,5 +190,38 @@ namespace StudyApp.API.Services.Implementations
                 .ToListAsync();
         }
 
+        public async Task<List<LiveClassModel>> GetLiveClassesForSession_Admin(int sessionId)
+        {
+            // 1️⃣ Validate session exists
+            var sessionExists = await _context.Sessions
+                .AnyAsync(s => s.Id == sessionId && !s.IsDeleted);
+
+            if (!sessionExists)
+                throw new Exception("Invalid session");
+
+            // 2️⃣ Fetch live classes for this session
+            return await _context.LiveClasses
+                .Where(x =>
+                    x.SessionId == sessionId &&
+                    !x.IsDeleted &&
+                    x.IsActive)
+                .OrderBy(x => x.ScheduledAt)
+                .Select(x => new LiveClassModel
+                {
+                    Id = (int)x.Id,
+                    Title = x.Title,
+                    ScheduledAt = x.ScheduledAt,
+                    DurationMinutes = x.DurationMinutes,
+                    IsStarted = x.IsStarted,
+                    IsEnded = x.IsEnded,
+
+                    // Admin DOES NOT need JoinUrl
+                    JoinUrl = x.JoinUrl,
+                    StartUrl = x.StartUrl
+                })
+                .ToListAsync();
+        }
+
+
     }
 }

@@ -9,10 +9,13 @@ using StudyApp.API.Data;
 using StudyApp.API.Domain.Interfaces;
 using StudyApp.API.Hubs;
 using StudyApp.API.Mappings;
+using StudyApp.API.Middlewares;
+using StudyApp.API.Models;
 using StudyApp.API.Repositories;
 using StudyApp.API.Services;
 using StudyApp.API.Services.Implementations;
 using StudyApp.API.Services.Interfaces;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,20 +27,37 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
 });
 
 // Cloudinary
-builder.Services.Configure<CloudinarySettings>(
-    builder.Configuration.GetSection("CloudinarySettings"));
+//builder.Services.Configure<CloudinarySettings>(
+//    builder.Configuration.GetSection("CloudinarySettings"));
 
-builder.Services.AddSingleton(x =>
-{
-    var config = x.GetRequiredService<IOptions<CloudinarySettings>>().Value;
-    return new Cloudinary(
-        new Account(
-            config.CloudName,
-            config.ApiKey,
-            config.ApiSecret
-        )
-    );
-});
+//builder.Services.AddSingleton(x =>
+//{
+//    var config = x.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+//    return new Cloudinary(
+//        new Account(
+//            config.CloudName,
+//            config.ApiKey,
+//            config.ApiSecret
+//        )
+//    );
+//});
+
+// BunnyCDN
+
+builder.Services.Configure<BunnySettings>(
+    builder.Configuration.GetSection("BunnySettings"));
+
+//builder.Services.AddSingleton(x =>
+//{
+//    var config = x.GetRequiredService<IOptions<BunnySettings>>().Value;
+//    return new BunnyClient(
+//        config.StorageZoneName,
+//        config.ApiKey,
+//        config.CdnUrl
+//    );
+//});
+
+
 
 // Kestrel limits
 builder.WebHost.ConfigureKestrel(options =>
@@ -92,7 +112,7 @@ builder.Services.AddScoped<ILiveClassService, LiveClassService>();
 builder.Services.AddScoped<ZoomTokenService>();
 builder.Services.AddScoped<ZoomMeetingService>();
 builder.Services.AddScoped<IZoomService, ZoomService>();
-
+builder.Services.AddScoped<IFileStorageService, BunnyStorageService>();
 // Mapster
 MappingConfig.RegisterMappings();
 
@@ -110,7 +130,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         ValidAudience = builder.Configuration["Jwt:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])
-        )
+        ),
+        NameClaimType = ClaimTypes.NameIdentifier,
+        RoleClaimType = ClaimTypes.Role
     };
 });
 
@@ -170,12 +192,11 @@ app.UseRouting();
 app.UseCors("StudyApp");
 
 app.UseAuthentication();
+app.UseMiddleware<ValidateSessionMiddleware>();
 app.UseAuthorization();
-app.UseMiddleware<SessionValidationMiddleware>();
-// SignalR hub
-app.MapHub<AttemptHub>("/hubs/attempt");
 
 // Controllers
 app.MapControllers();
-
+// SignalR hub
+app.MapHub<AttemptHub>("/hubs/attempt");
 app.Run();

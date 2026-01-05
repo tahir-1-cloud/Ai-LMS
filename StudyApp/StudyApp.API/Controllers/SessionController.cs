@@ -36,6 +36,14 @@ namespace StudyApp.API.Controllers
             IEnumerable<SessionModel> enumerable = await _sessionServices.GetActiveSessions();
             return Ok(enumerable);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> BlockSession([FromBody] BlockSessionRequest request)
+        {
+            await _sessionServices.BlockSessionAsync(request.SessionId);
+            return Ok();
+        }
+
     }
 
 }
