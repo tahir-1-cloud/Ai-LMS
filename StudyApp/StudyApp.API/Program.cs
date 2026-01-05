@@ -10,6 +10,7 @@ using StudyApp.API.Domain.Interfaces;
 using StudyApp.API.Hubs;
 using StudyApp.API.Mappings;
 using StudyApp.API.Middlewares;
+using StudyApp.API.Models;
 using StudyApp.API.Repositories;
 using StudyApp.API.Services;
 using StudyApp.API.Services.Implementations;
@@ -26,20 +27,37 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
 });
 
 // Cloudinary
-builder.Services.Configure<CloudinarySettings>(
-    builder.Configuration.GetSection("CloudinarySettings"));
+//builder.Services.Configure<CloudinarySettings>(
+//    builder.Configuration.GetSection("CloudinarySettings"));
 
-builder.Services.AddSingleton(x =>
-{
-    var config = x.GetRequiredService<IOptions<CloudinarySettings>>().Value;
-    return new Cloudinary(
-        new Account(
-            config.CloudName,
-            config.ApiKey,
-            config.ApiSecret
-        )
-    );
-});
+//builder.Services.AddSingleton(x =>
+//{
+//    var config = x.GetRequiredService<IOptions<CloudinarySettings>>().Value;
+//    return new Cloudinary(
+//        new Account(
+//            config.CloudName,
+//            config.ApiKey,
+//            config.ApiSecret
+//        )
+//    );
+//});
+
+// BunnyCDN
+
+builder.Services.Configure<BunnySettings>(
+    builder.Configuration.GetSection("BunnySettings"));
+
+//builder.Services.AddSingleton(x =>
+//{
+//    var config = x.GetRequiredService<IOptions<BunnySettings>>().Value;
+//    return new BunnyClient(
+//        config.StorageZoneName,
+//        config.ApiKey,
+//        config.CdnUrl
+//    );
+//});
+
+
 
 // Kestrel limits
 builder.WebHost.ConfigureKestrel(options =>
@@ -94,7 +112,7 @@ builder.Services.AddScoped<ILiveClassService, LiveClassService>();
 builder.Services.AddScoped<ZoomTokenService>();
 builder.Services.AddScoped<ZoomMeetingService>();
 builder.Services.AddScoped<IZoomService, ZoomService>();
-
+builder.Services.AddScoped<IFileStorageService, BunnyStorageService>();
 // Mapster
 MappingConfig.RegisterMappings();
 
