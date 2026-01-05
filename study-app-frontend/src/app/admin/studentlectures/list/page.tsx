@@ -8,12 +8,12 @@ import { getAllstudentLectures, assignLectureToSession,unassignPaperFromSession
 import { LectureDetailsResponseDto } from '@/types/studentLectures';
 import type { Session } from '@/types/session';
 import { TeamOutlined } from '@ant-design/icons';
-import { useAdminAuth } from "@/hooks/useAdminAuth";  
+// import { useAdminAuth } from "@/hooks/useAdminAuth";  
 import axiosInstance from '@/services/axiosInstance';
 import { toast } from "sonner";
 
 export default function StudentLecturesPage() {
-  useAdminAuth();
+  // useAdminAuth();
 
   const [lectures, setLectures] = useState<LectureDetailsResponseDto[]>([]);
   const [filteredLectures, setFilteredLectures] = useState<LectureDetailsResponseDto[]>([]);

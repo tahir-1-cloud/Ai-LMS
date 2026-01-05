@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react'
 const testimonials = [
   {
     name: "Dr. Fatima Shoukat",
-    quote: "This platform helped me secure top marks in my ECAT entry test — the mock tests were spot on! The questions were very similar to the actual exam.",
+    quote: "At Junoon MDCAT, you don’t feel like a student, you feel like family. The dedication, care,and nonstop motivation push you to give your absolute best every single day.",
     university: "Nishter Medical University Multan",
     session: "Session 2023-2024",
     marks: "178 / 200",
@@ -14,7 +14,7 @@ const testimonials = [
   },
   {
     name: "Dr. Afifa javed",
-    quote: "EntryTestPro made preparation so easy! The lectures were clear, and mock tests improved my confidence significantly. Highly recommended!",
+    quote: "I never felt alone in my preparation because Junoon MDCAT stands with its students like a family.",
     university: "Ayub medical college Abbottabad",
     session: "Session 2023-2024",
     marks: "182 / 200",
@@ -22,7 +22,7 @@ const testimonials = [
   },
    {
     name: "Dr Tayyab Naseer",
-    quote: "The practice material was exceptional and closely matched the actual test pattern. Scored 185 thanks to their amazing guidance!",
+    quote: "Junoon MDCAT doesn’t create pressure, it creates confidence. The environment pushes you to grow without fear.",
     university: "Avicenna Medical College Lahore",
     session: "Session 2023-2024",
     marks: "185 / 200",
@@ -30,7 +30,7 @@ const testimonials = [
   },
   {
     name: "Syeda Nimra Gillani",
-    quote: "Highly recommended! I cracked my NUMS test on the first try thanks to the detailed practice sessions and comprehensive study material.",
+    quote: "This platform gave my MDCAT journey direction, discipline, and belief. Junoon MDCAT truly lives up to its name.",
     university: "Poonch Medical College Rawalakot",
     session: "Session 2022-2023",
     marks: "171 / 200",
@@ -38,23 +38,23 @@ const testimonials = [
   },
    {
     name: "Muhammad Shairaz Rumi",
-    quote: "The practice material was exceptional and closely matched the actual test pattern. Scored 185 thanks to their amazing guidance!",
+    quote: "Joining Junoon MDCAT was the best decision of my MDCAT journey. Every lecture isfull of energy, clarity, and purpose. The teachers don’t just teach concepts —they ignite junoon within us!",
     university: "Rawalpindi medical university Rawalpindi",
-    session: "Session 2023-2024",
-    marks: "185 / 200",
-    img: "/images/Landingpage/drunkown1.jpg",
-  },
-   {
-    name: "Zain Shairaz",
-    quote: "The practice material was exceptional and closely matched the actual test pattern. Scored 185 thanks to their amazing guidance!",
-    university:"Rawalpindi Medical University Rawalpindi",
     session: "Session 2023-2024",
     marks: "185 / 200",
     img: "/images/Landingpage/drunkown2.jpg",
   },
    {
+    name: "Zain Shairaz",
+    quote: "Junoon MDCAT transformed my preparation completely.From confusion toconfidence, from stressto strategy—this place truly creates winners!",
+    university:"Rawalpindi Medical University Rawalpindi",
+    session: "Session 2023-2024",
+    marks: "185 / 200",
+    img: "/images/Landingpage/drunkown1.jpg",
+  },
+   {
     name: "Arbab Khan",
-    quote: "The practice material was exceptional and closely matched the actual test pattern. Scored 185 thanks to their amazing guidance!",
+    quote: "From day one, Junoon MDCAT made me feel capable. The mentors invest in us like our success is their own!",
     university:"Abu Umara medical and dental college",
     session: "Session 2023-2024",
     marks: "185 / 200",
@@ -62,10 +62,33 @@ const testimonials = [
   },
      {
     name: "Hifza Zahir",
-    quote: "The practice material was exceptional and closely matched the actual test pattern. Scored 185 thanks to their amazing guidance!",
-    university:"Poonch medical college",
+    quote: "Classes are focused, energetic, and helpful.",
+    university:"Ayub Medical College Abbottabad",
     session: "Session 2023-2024",
     marks: "185 / 200",
+  },
+   {
+    name: "Hania Waseem",
+    quote: "Best platform for serious MDCAT preparation.",
+    university:"Poonch Medical College Rawlakot",
+    session: "Session 2023-2024",
+    marks: "185 / 200",
+  },
+   {
+    name: "Uzair Ali",
+    quote: "Junoon MDCAT builds strong foundations for MDCAT.Dr. Waqas Uzair’s guidance makes the real difference.",
+    university:"Allama Iqbal Medical College Lahore",
+    session: "Session 2023-2024",
+    marks: "185 / 200",
+    img: "/images/Landingpage/uzair.jpeg",
+  },
+    {
+    name: "Dr.Muhhammad Atif",
+    quote: "Learning became enjoyable at Junoon MDCAT",
+    university:"Punjab Medical College Faislabad",
+    session: "Session 2023-2024",
+    marks: "185 / 200",
+    img: "/images/Landingpage/atif.jpeg",
   }
 ]
 

@@ -17,8 +17,8 @@ const instructors = [
     img: "/images/Landingpage/expertuzair1.jpg",
   },
   {
-    name: "Shafique Rafique",
-    subject: "Physics Mentor",
+    name: "Fahad Bhatti",
+    subject: "Physics Expert",
     exp: "12+ Years Experience",
     img: "/images/Landingpage/exprtshafiq1.jpg",
   },
