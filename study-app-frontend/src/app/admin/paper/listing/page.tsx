@@ -34,6 +34,8 @@ export default function Page() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [pageSize, setPageSize] = useState<number>(10);
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [groupedPapers, setGroupedPapers] = useState<Record<string, PaperModel[]>>({});
 
   // Questions modal
   const [modalVisible, setModalVisible] = useState(false);
@@ -55,21 +57,32 @@ export default function Page() {
   // expanded rows for question options
   const [expandedRowKeys, setExpandedRowKeys] = useState<React.Key[]>([]);
 
-  useEffect(() => {
-    const fetch = async () => {
-      try {
-        const data = await getAllPapers();
-        setPapers(data);
-        setFilteredPapers(data);
-      } catch (err) {
-        console.error('Failed to load papers', err);
-        message.error('Failed to load papers');
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetch();
-  }, []);
+useEffect(() => {
+  const fetch = async () => {
+    try {
+      const data = await getAllPapers();
+
+      setPapers(data);
+
+      // group by subject
+      const grouped = data.reduce((acc: Record<string, PaperModel[]>, paper) => {
+        const subject = paper.subjectName || 'Uncategorized';
+        acc[subject] = acc[subject] || [];
+        acc[subject].push(paper);
+        return acc;
+      }, {});
+
+      setGroupedPapers(grouped);
+      setFilteredPapers([]); // initially nothing selected
+    } catch (err) {
+      message.error('Failed to load papers');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetch();
+}, []);
 
   const refreshPapers = async () => {
     setLoading(true);
@@ -92,13 +105,20 @@ export default function Page() {
   const handleSearch = (value: string) => {
     setSearchTerm(value);
     const lower = value.toLowerCase();
-    const filtered = papers.filter(
+
+    const source = selectedSubject
+      ? groupedPapers[selectedSubject] || []
+      : papers;
+
+    const filtered = source.filter(
       (p) =>
         p.title?.toLowerCase().includes(lower) ||
         new Date(p.testConductedOn).getFullYear().toString().includes(lower)
     );
+
     setFilteredPapers(filtered);
   };
+
 
   // tolerant helpers (normalize API shapes)
   function parseQuestionId(q: any): number | undefined {
@@ -520,29 +540,74 @@ export default function Page() {
             />
           </div>
         </div>
+        {/* SUBJECT FOLDERS */}
+        {!loading && !selectedSubject && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
+            {Object.entries(groupedPapers).map(([subject, papers]) => (
+              <div
+                key={subject}
+                onClick={() => {
+                  setSelectedSubject(subject);
+                  setFilteredPapers(papers);
+                  setSearchTerm('');
+                }}
+                className="cursor-pointer rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition"
+              >
+                <div className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                  📁 {subject}
+                </div>
+                <div className="mt-2 text-sm text-gray-500">
+                  {papers.length} paper{papers.length > 1 ? 's' : ''}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {selectedSubject && (
+          <div className="mb-6 flex items-center gap-4">
+            <Button
+              onClick={() => {
+                setSelectedSubject(null);
+                setFilteredPapers([]);
+                setSearchTerm('');
+              }}
+            >
+              ← Back to Subjects
+            </Button>
+
+            <h2 className="text-xl font-semibold text-gray-700">
+              Subject: {selectedSubject}
+            </h2>
+          </div>
+        )}
 
         {/* Table */}
         {loading ? (
-          <div className="flex justify-center py-20 text-gray-600 text-lg font-medium">Loading papers...</div>
-        ) : filteredPapers.length === 0 ? (
-          <div className="text-center py-20 text-gray-600 text-lg font-medium">No papers found.</div>
-        ) : (
-          <Table
-            columns={columns}
-            dataSource={filteredPapers}
-            rowKey={(r) => String((r as any).id)}
-            pagination={{
-              pageSize,
-              showSizeChanger: false,
-              showTotal: (total) => `Total ${total} sessions`,
-            }}
-            bordered
-            className="border border-gray-200 rounded-lg"
-            style={{ borderRadius: '12px' }}
-            rowClassName={() => 'hover:bg-gray-50'}
-            onHeaderRow={() => ({ className: 'bg-blue-50 text-gray-700' })}
-          />
-        )}
+          <div className="flex justify-center py-20 text-gray-600 text-lg font-medium">
+            Loading papers...
+          </div>
+        ) : selectedSubject ? (
+          filteredPapers.length === 0 ? (
+            <div className="text-center py-20 text-gray-600 text-lg font-medium">
+              No papers found in this subject.
+            </div>
+          ) : (
+            <Table
+              columns={columns}
+              dataSource={filteredPapers}
+              rowKey={(r) => String(r.id)}
+              pagination={{
+                pageSize,
+                showSizeChanger: false,
+                showTotal: (total) => `Total ${total} papers`,
+              }}
+              bordered
+              className="border border-gray-200 rounded-lg"
+              style={{ borderRadius: '12px' }}
+            />
+          )
+        ) : null}
+
 
         {/* Questions Modal */}
         <Modal

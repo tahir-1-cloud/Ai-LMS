@@ -6,6 +6,7 @@ namespace StudyApp.API.Models
     {
         public int Id { get; set; }
         public string Title { get; set; }
+        public string SubjectName { get; set; } = string.Empty;
         public DateTime TestConductedOn { get; set; }
         public int DurationMinutes { get; set; }
         public List<QuestionModel> Questions { get; set; } = new();
@@ -115,6 +116,7 @@ namespace StudyApp.API.Models
         public int AttemptId { get; set; }
         public int PaperId { get; set; }
         public string PaperTitle { get; set; } = string.Empty;
+        public string SubjectName { get; set; } = string.Empty;
         public DateTime AttemptedOn { get; set; }
         public string Status { get; set; } = string.Empty;
         public int Correct { get; set; }

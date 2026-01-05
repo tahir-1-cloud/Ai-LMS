@@ -54,12 +54,33 @@ export default function AdminLiveClasses() {
   // -------------------------
   // Create class
   // -------------------------
+  const GRACE_MINUTES = 1;
 const handleCreate = async () => {
+  console.log('RAW scheduledAt value:', scheduledAt);
   if (!title || !scheduledAt) {
     toast.error('All fields are required');
     return;
   }
 
+    const selected = new Date(scheduledAt);
+
+  const nowPK = new Date(
+    new Date().toLocaleString('en-US', { timeZone: 'Asia/Karachi' })
+  );
+
+  const allowedFrom = new Date(
+    nowPK.getTime() - GRACE_MINUTES * 60 * 1000
+  );
+
+  console.log('Selected:', selected.toString());
+  console.log('Now PK:', nowPK.toString());
+  console.log('Allowed From:', allowedFrom.toString());
+
+  if (selected < allowedFrom) {
+    toast.error('Cannot schedule meeting in the past');
+    return;
+  }
+  
   try {
     setLoading(true);
 
@@ -76,8 +97,13 @@ const handleCreate = async () => {
     setScheduledAt('');
     setDuration(60);
     load();
-  } catch {
-    toast.error('Failed to create class');
+  } catch (error: any) {
+    const message =
+      error?.response?.data?.message ||
+      error?.response?.data ||
+      'Failed to create class';
+
+    toast.error(message);
   } finally {
     setLoading(false);
   }
@@ -94,6 +120,20 @@ const formatPKTime = (utcString: string) => {
     minute: '2-digit',
     hour12: true,
   });
+};
+
+const getNowPKForInput = () => {
+  const now = new Date();
+
+  const pkNow = new Date(
+    now.toLocaleString('en-US', { timeZone: 'Asia/Karachi' })
+  );
+
+  const pad = (n: number) => n.toString().padStart(2, '0');
+
+  return `${pkNow.getFullYear()}-${pad(pkNow.getMonth() + 1)}-${pad(
+    pkNow.getDate()
+  )}T${pad(pkNow.getHours())}:${pad(pkNow.getMinutes())}`;
 };
 
 
@@ -219,6 +259,7 @@ const formatPKTime = (utcString: string) => {
         <Input
           type="datetime-local"
           value={scheduledAt}
+          min={getNowPKForInput()}
           onChange={(e) => setScheduledAt(e.target.value)}
         />
 

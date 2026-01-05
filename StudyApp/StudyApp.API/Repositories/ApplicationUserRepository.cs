@@ -64,6 +64,14 @@ namespace StudyApp.API.Repositories
             return await _context.UserLogins
                 .FirstOrDefaultAsync(x => x.Id == loginId);
         }
+        public async Task<Session?> GetSessionByUserIdAsync(int userId)
+        {
+            return await _context.ApplicationUsers
+                .Where(x => x.Id == userId)
+                .Select(x => x.Session)
+                .FirstOrDefaultAsync();
+        }
+
 
         public async Task ExpireAllSessionsAsync(long userId)
         {

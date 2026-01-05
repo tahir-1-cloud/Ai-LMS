@@ -13,6 +13,7 @@ namespace StudyApp.API.Domain.Interfaces
         Task<ApplicationUser?> FindUserByUserNameAsync(string userName);
 
         Task<UserLogin?> GetSessionByIdAsync(long loginId);
+        Task<Session> GetSessionByUserIdAsync(int userId);
         Task ExpireAllSessionsAsync(long userId);
 
     }

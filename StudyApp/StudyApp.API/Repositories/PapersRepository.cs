@@ -183,7 +183,7 @@ namespace StudyApp.API.Repositories
                     Id = p.Id,
                     Title = p.Title,
                     TestConductedOn = p.TestConductedOn,
-
+                    SubjectName = p.SubjectName,
                     SessionId = s.Id,
                     SessionTitle = s.Title,
                     AvailableFrom = p.TestConductedOn,

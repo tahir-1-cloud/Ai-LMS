@@ -94,6 +94,11 @@ export default function StudentAssignedTestsPage() {
   const [starting, setStarting] = useState<number | null>(null);
   const [searchText, setSearchText] = useState('');
 
+
+  const [groupedPapers, setGroupedPapers] = useState<Record<string, AssignedPaperDto[]>>({});
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [filteredPapers, setFilteredPapers] = useState<AssignedPaperDto[]>([]);
+
   const studentId = getStudentId();
   const router = useRouter();
 
@@ -104,16 +109,32 @@ export default function StudentAssignedTestsPage() {
   }, []);
 
   const loadAssigned = async () => {
-    setLoading(true);
-    try {
-      const data = await getAssignedPapersForStudent(studentId);
-      setAssigned(data);
-    } catch {
-      message.error('Failed to load assigned tests');
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const data = await getAssignedPapersForStudent(studentId);
+
+    setAssigned(data);
+
+    const grouped = data.reduce<Record<string, AssignedPaperDto[]>>(
+      (acc, paper) => {
+        const subject = paper.subjectName || 'Uncategorized';
+        if (!acc[subject]) acc[subject] = [];
+        acc[subject].push(paper);
+        return acc;
+      },
+      {}
+    );
+
+    setGroupedPapers(grouped);
+    setFilteredPapers([]); // nothing selected initially
+  } catch {
+    message.error('Failed to load assigned tests');
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   const loadAttempts = async () => {
     setAttemptsLoading(true);
@@ -166,16 +187,17 @@ export default function StudentAssignedTestsPage() {
 
   /* ------------------ FILTER + SORT ------------------ */
 
-  const filteredAndSortedData = assigned
-    .filter(r =>
-      r.title?.toLowerCase().includes(searchText.toLowerCase())
-    )
-    .sort((a, b) => {
-      const p1 = getStatusPriority(a);
-      const p2 = getStatusPriority(b);
-      if (p1 !== p2) return p1 - p2;
-      return safeDateValue(a.availableFrom) - safeDateValue(b.availableFrom);
-    });
+  const filteredAndSortedData = (selectedSubject ? filteredPapers : [])
+  .filter(r =>
+    r.title?.toLowerCase().includes(searchText.toLowerCase())
+  )
+  .sort((a, b) => {
+    const p1 = getStatusPriority(a);
+    const p2 = getStatusPriority(b);
+    if (p1 !== p2) return p1 - p2;
+    return safeDateValue(a.availableFrom) - safeDateValue(b.availableFrom);
+  });
+
 
   /* ------------------ TABLE ------------------ */
 
@@ -289,19 +311,59 @@ export default function StudentAssignedTestsPage() {
             style={{ width: 260 }}
           />
         </div>
+        {/* SUBJECT FOLDERS */}
+        {!isBusy && !selectedSubject && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mb-10">
+            {Object.entries(groupedPapers).map(([subject, papers]) => (
+              <div
+                key={subject}
+                onClick={() => {
+                  setSelectedSubject(subject);
+                  setFilteredPapers(papers);
+                  setSearchText('');
+                }}
+                className="cursor-pointer rounded-xl border border-gray-200 bg-white p-6 shadow-sm hover:shadow-md transition"
+              >
+                <div className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                  📁 {subject}
+                </div>
+                <div className="mt-2 text-sm text-gray-500">
+                  {papers.length} test{papers.length > 1 ? 's' : ''}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {selectedSubject && (
+          <div className="mb-4 flex items-center gap-4">
+            <Button
+              onClick={() => {
+                setSelectedSubject(null);
+                setFilteredPapers([]);
+                setSearchText('');
+              }}
+            >
+              ← Back to Subjects
+            </Button>
+
+            <Title level={4} style={{ margin: 0 }}>
+              Subject: {selectedSubject}
+            </Title>
+          </div>
+        )}
 
         {isBusy ? (
           <div className="flex justify-center py-20">
             <Spin size="large" />
           </div>
-        ) : (
+        ) : selectedSubject ? (
           <Table
             columns={columns}
             dataSource={filteredAndSortedData}
             rowKey="id"
             pagination={{ pageSize: 10 }}
           />
-        )}
+        ) : null}
       </div>
     </div>
   );

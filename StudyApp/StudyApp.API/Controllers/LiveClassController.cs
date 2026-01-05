@@ -25,9 +25,20 @@ namespace StudyApp.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateLiveClassModel model)
         {
-            await _service.CreateLiveClassAsync(model);
-            return Ok();
+            try
+            {
+                await _service.CreateLiveClassAsync(model);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    message = ex.Message
+                });
+            }
         }
+
 
         [HttpPost("{id}/start")]
         public async Task<IActionResult> Start(int id)

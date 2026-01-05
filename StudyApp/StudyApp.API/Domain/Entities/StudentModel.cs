@@ -6,6 +6,7 @@
         public string Title { get; set; } = string.Empty;
         public DateTime? TestConductedOn { get; set; }
         public int? SessionId { get; set; }
+        public string SubjectName { get; set; } = string.Empty;
         public string? SessionTitle { get; set; }
         public DateTime? AvailableFrom { get; set; }   
         public DateTime? AvailableTo { get; set; }

@@ -33,6 +33,7 @@ namespace StudyApp.API.Services.Implementations
             Paper paper = new Paper
             {
                 Title = request.Title,
+                SubjectName = request.SubjectName,
                 TestConductedOn = utcDate,
                 DurationMinutes = request.DurationMinutes
             };

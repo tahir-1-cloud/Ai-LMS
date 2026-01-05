@@ -15,6 +15,7 @@ export interface Student {
 export interface AssignedPaperDto {
   id: number;
   title: string;
+  subjectName: string;
   testConductedOn?: string | null;
   sessionId?: number | null;
   sessionTitle?: string | null;

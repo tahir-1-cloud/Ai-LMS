@@ -4,6 +4,7 @@ import axiosInstance from './axiosInstance';
 export interface AssignedPaperDto {
   id: number; // paper id
   title: string;
+  subjectName: string;
   testConductedOn?: string | null;
   sessionId?: number | null;
   sessionTitle?: string | null;

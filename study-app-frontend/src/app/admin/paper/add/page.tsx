@@ -16,6 +16,7 @@ export default function AddPaperForm() {
   useAdminAuth();
   const [title, setTitle] = useState('');
   const [testDateTime, setTestDateTime] = useState('');
+  const [subjectName, setSubjectName] = useState('');
   const [durationMinutes, setDurationMinutes] = useState<number | ''>(30);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
@@ -37,13 +38,19 @@ export default function AddPaperForm() {
       toast.error('Duration must be at least 1 minute');
       return;
     }
+    if (!subjectName.trim()) {
+      toast.error('Subject name is required');
+      return;
+    }
 
 
     const paper: CreatePaperModel = {
       title: title.trim(),
+      subjectName: subjectName.trim(), // ✅ ADD
       testConductionDate: new Date(testDateTime).toISOString(),
       durationMinutes,
     };
+
 
 
     try {
@@ -75,6 +82,17 @@ export default function AddPaperForm() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Enter paper title"
+              required
+            />
+          </div>
+          {/* Subject Name */}
+          <div>
+            <Label>Subject Name</Label>
+            <Input
+              type="text"
+              value={subjectName}
+              onChange={(e) => setSubjectName(e.target.value)}
+              placeholder="e.g. Biology"
               required
             />
           </div>

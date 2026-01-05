@@ -131,6 +131,9 @@ namespace StudyApp.API.Services.Implementations
 
             await _userLoginRepository.AddAsync(session);
 
+            var getsession = await _userRepository.GetSessionByUserIdAsync(applicationUser.Id);
+            applicationUser.Session= getsession;
+
             // ✅ generate token WITH session id
             var token = GenerateJwtToken(applicationUser, session.Id);
 
