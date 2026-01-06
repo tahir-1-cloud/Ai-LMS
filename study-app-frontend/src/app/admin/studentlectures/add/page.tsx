@@ -4,11 +4,9 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { LectureDetailsModel } from "@/types/studentLectures";
 import { addStudentLectures } from "@/services/studentLectureServices";
-import { useAdminAuth } from "@/hooks/useAdminAuth";  
 
 
 export default function LectureUploadForm() {
-  useAdminAuth();
   const [lecture, setLecture] = useState<LectureDetailsModel>({
     title: "",
     description: "",

@@ -24,6 +24,10 @@ namespace StudyApp.API.Controllers
         {         
             try
             {
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
                 if (model == null) return BadRequest("Model is required.");
                 if (model.Thumbnail == null || model.Video == null) return BadRequest("Thumbnail and Video are required.");
 

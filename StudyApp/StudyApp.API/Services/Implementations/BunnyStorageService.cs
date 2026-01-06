@@ -4,16 +4,20 @@ using StudyApp.API.Services.Interfaces;
 
 namespace StudyApp.API.Services.Implementations
 {
-    public class BunnyStorageService: IFileStorageService
+    public class BunnyStorageService : IFileStorageService
     {
         private readonly BunnySettings _settings;
         private readonly HttpClient _httpClient;
 
-        public BunnyStorageService(IOptions<BunnySettings> settings)
+        public BunnyStorageService(
+            IOptions<BunnySettings> settings,
+            HttpClient httpClient)
         {
             _settings = settings.Value;
-            _httpClient = new HttpClient();
-            _httpClient.DefaultRequestHeaders.Add("AccessKey", _settings.ApiKey);
+            _httpClient = httpClient;
+
+            // ✅ Correct header
+            _httpClient.DefaultRequestHeaders.Add("AccessKey", _settings.AccessKey);
         }
 
         public async Task<string> UploadAsync(IFormFile file)
@@ -25,20 +29,28 @@ namespace StudyApp.API.Services.Implementations
             var folder = isVideo ? "lecture_videos" : "lecture_thumbnails";
 
             var fileName = $"{Guid.NewGuid()}_{file.FileName}";
+
+            // ✅ Correct Bunny Storage API URL
             var uploadUrl =
-                $"https://storage.bunnycdn.com/{_settings.StorageZoneName}/{folder}/{fileName}";
+                $"https://{_settings.StorageHost}/{_settings.StorageZoneName}/{folder}/{fileName}";
 
             await using var stream = file.OpenReadStream();
-            var content = new StreamContent(stream);
+            using var content = new StreamContent(stream);
+
             content.Headers.ContentType =
                 new System.Net.Http.Headers.MediaTypeHeaderValue(file.ContentType);
 
             var response = await _httpClient.PutAsync(uploadUrl, content);
-            response.EnsureSuccessStatusCode();
 
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Bunny upload failed: {error}");
+            }
+
+            // ✅ CDN URL for public access
             return $"{_settings.CdnUrl}/{folder}/{fileName}";
         }
-
-
     }
 }
+

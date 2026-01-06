@@ -8,7 +8,7 @@ export async function addStudentLectures(data: FormData) {
     const response = await axiosInstance.post("/StudentLectures/UploadLectures",
       data,
       {
-        headers: { "Content-Type": "multipart/form-data" },
+         headers: { "Content-Type": "multipart/form-data" },
         timeout: 5 * 60 * 1000, // 5 minutes timeout
       }
     );
