@@ -88,6 +88,20 @@ namespace StudyApp.API.Controllers
             return Ok(new { message = "Logged out successfully" });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetTotalStudents()
+        {
+            try
+            {
+                int totalStudents = await _authenticationServices.GetTotalstudents();
+                return Ok(totalStudents);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
 
     }
 

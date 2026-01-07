@@ -24,5 +24,12 @@ namespace StudyApp.API.Repositories
             _context.StudentEnrollments.Remove(stdenroll);
             await _context.SaveChangesAsync();
         }
+
+        public async Task<int> GetPendingStudentsCountAsync()
+        {
+            return await _context.StudentEnrollments
+                                   .Where(e => e.Status == "Pending")
+                                   .CountAsync();
+        }
     }
 }

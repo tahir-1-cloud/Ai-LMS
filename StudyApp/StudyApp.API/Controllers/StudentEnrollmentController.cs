@@ -63,5 +63,19 @@ namespace StudyApp.API.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GettotalEnrollStudent()
+        {
+            try
+            {
+                int totalEnroll = await _studentEnrollServices.PendingStudentsCount();
+                return Ok(totalEnroll);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
     }
 }

@@ -88,6 +88,9 @@ namespace StudyApp.API.Repositories
             await _context.SaveChangesAsync();
         }
 
-
+        public async Task<int> GetTotalUsersAsync()
+        {
+            return await _context.ApplicationUsers.CountAsync();
+        }
     }
 }

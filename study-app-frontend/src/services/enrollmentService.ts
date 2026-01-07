@@ -34,3 +34,8 @@ export const deleteEnrollStudent = async (studentId: number): Promise<void> => {
         throw error;
     }
 };
+
+export const getTotalEnrolledStudents = async (): Promise<number> => {
+    const response = await axiosInstance.get("/StudentEnrollment/GettotalEnrollStudent");
+    return response.data;
+};

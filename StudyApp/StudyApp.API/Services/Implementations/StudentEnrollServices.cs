@@ -40,5 +40,10 @@ namespace StudyApp.API.Services.Implementations
         {
             await _studentEnrollRepository.DeleteEnrolledStudentAsync(studentId);
         }
+
+        public async Task<int> PendingStudentsCount()
+        {
+           return await _studentEnrollRepository.GetPendingStudentsCountAsync();
+        }
     }
 }

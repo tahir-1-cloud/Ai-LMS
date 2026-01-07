@@ -1,68 +1,73 @@
 "use client";
-import { ApexOptions } from "apexcharts";
-import dynamic from "next/dynamic";
-import { useState } from "react";
-import { Dropdown } from "@/components/ui/dropdown/Dropdown";
-import { DropdownItem } from "@/components/ui/dropdown/DropdownItem";
-import { FiMoreVertical } from "react-icons/fi";
 
-const ReactApexChart = dynamic(() => import("react-apexcharts"), {
-  ssr: false,
-});
+import React from "react";
+import { UserCircleIcon, AcademicCapIcon } from "@heroicons/react/24/outline";
 
-export default function StudentRegistrationsChart() {
-  const options: ApexOptions = {
-    colors: ["#465fff"],
-    chart: { fontFamily: "Poppins, sans-serif", type: "bar", height: 180, toolbar: { show: false } },
-    plotOptions: { bar: { horizontal: false, columnWidth: "39%", borderRadius: 5, borderRadiusApplication: "end" } },
-    dataLabels: { enabled: false },
-    stroke: { show: true, width: 4, colors: ["transparent"] },
-    xaxis: {
-      categories: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],
-      axisBorder: { show: false },
-      axisTicks: { show: false },
-    },
-    legend: { show: true, position: "top", horizontalAlign: "left", fontFamily: "Poppins" },
-    yaxis: { title: { text: undefined } },
-    grid: { yaxis: { lines: { show: true } } },
-    fill: { opacity: 1 },
-    tooltip: { x: { show: false }, y: { formatter: (val: number) => `${val} Students` } },
-  };
-
-  // Example static monthly data of student registrations
-  const series = [
-    { name: "Student Registrations", data: [50, 80, 70, 120, 100, 90, 130, 60, 110, 140, 120, 150] },
-  ];
-
-  const [isOpen, setIsOpen] = useState(false);
-  const toggleDropdown = () => setIsOpen(!isOpen);
-  const closeDropdown = () => setIsOpen(false);
-
+export default function AdminDashboardHeader() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white px-5 pt-5 dark:border-gray-800 dark:bg-white/[0.03] sm:px-6 sm:pt-6">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-800 dark:text-white/90">
-          Monthly Student Registrations
-        </h3>
+    <div className="w-full rounded-2xl border border-gray-200 bg-white p-6 dark:border-gray-800 dark:bg-white/[0.03]">
+      {/* Top Section */}
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        {/* Left: App Info */}
+        <div className="flex items-center gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-100 dark:bg-blue-900/30">
+            <AcademicCapIcon className="h-7 w-7 text-blue-600 dark:text-blue-400" />
+          </div>
 
-        <div className="relative inline-block">
-          <button onClick={toggleDropdown} className="dropdown-toggle">
-            <FiMoreVertical className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" />
-          </button>
-          <Dropdown isOpen={isOpen} onClose={closeDropdown} className="w-40 p-2">
-            <DropdownItem onItemClick={closeDropdown} className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
-              View More
-            </DropdownItem>
-            <DropdownItem onItemClick={closeDropdown} className="flex w-full font-normal text-left text-gray-500 rounded-lg hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300">
-              Delete
-            </DropdownItem>
-          </Dropdown>
+          <div>
+            <h1 className="text-xl font-bold text-gray-800 dark:text-white/90">
+              Junoon MDCAT
+            </h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Medical & Dental College Admission Test Portal
+            </p>
+          </div>
+        </div>
+
+        {/* Right: Admin Info */}
+        <div className="flex items-center gap-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 dark:border-gray-800 dark:bg-gray-900/40">
+          <UserCircleIcon className="h-8 w-8 text-gray-600 dark:text-gray-300" />
+          <div>
+            <p className="text-sm font-medium text-gray-800 dark:text-white/90">
+              Doctor Waqas
+            </p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Administrator
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-full overflow-x-auto custom-scrollbar">
-        <div className="-ml-5 min-w-[650px] xl:min-w-full pl-2">
-          <ReactApexChart options={options} series={series} type="bar" height={180} />
+      {/* Divider */}
+      <div className="my-6 h-px w-full bg-gray-200 dark:bg-gray-800"></div>
+
+      {/* Info Section */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            System Status
+          </p>
+          <p className="mt-1 font-semibold text-green-600">
+            Operational
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Academic Session
+          </p>
+          <p className="mt-1 font-semibold text-gray-800 dark:text-white/90">
+            2025 – 2026
+          </p>
+        </div>
+
+        <div className="rounded-xl border border-gray-200 p-4 dark:border-gray-800">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Platform Type
+          </p>
+          <p className="mt-1 font-semibold text-gray-800 dark:text-white/90">
+            Admin Dashboard
+          </p>
         </div>
       </div>
     </div>

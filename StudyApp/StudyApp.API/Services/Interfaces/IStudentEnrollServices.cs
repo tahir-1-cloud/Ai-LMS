@@ -9,5 +9,7 @@ namespace StudyApp.API.Services.Interfaces
         Task<IEnumerable<StudentEnrollModel>> GetEnrollStudents();
 
         Task DeleteStudent(int studentId);
+
+        Task<int> PendingStudentsCount();
     }
 }

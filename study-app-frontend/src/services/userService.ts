@@ -35,3 +35,8 @@ export const updateStudentBlockStatus = async (studentId: number,isBlocked: bool
 
     return response.data;
  };
+
+ export const getTotalStudents = async (): Promise<number> => {
+    const response = await axiosInstance.get("/Authentication/GetTotalStudents");
+    return response.data;
+};

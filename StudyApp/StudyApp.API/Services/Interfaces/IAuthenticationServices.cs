@@ -14,5 +14,7 @@ namespace StudyApp.API.Services.Interfaces
         Task<bool> SetStudentBlockStatusAsync(int studentId, bool isBlocked);
         Task<bool> LogoutAsync(ClaimsPrincipal user);
 
+        Task<int> GetTotalstudents();
+
     }
 }

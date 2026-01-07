@@ -226,6 +226,9 @@ namespace StudyApp.API.Services.Implementations
         }
 
 
-
+        public async Task<int> GetTotalstudents()
+        {
+            return await _userRepository.GetTotalUsersAsync();
+        }
     }
 }
