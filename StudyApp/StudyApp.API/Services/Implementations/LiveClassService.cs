@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using StudyApp.API.Data;
 using StudyApp.API.Domain.Entities;
 using StudyApp.API.Models;
@@ -225,6 +226,22 @@ namespace StudyApp.API.Services.Implementations
                 })
                 .ToListAsync();
         }
+
+        public async Task DeleteLiveClassAsync(int liveClassId)
+        {
+            var liveClass = await _context.LiveClasses.FindAsync(liveClassId);
+
+            if (liveClass == null)
+                throw new Exception("Live class not found");
+
+            if (!liveClass.IsEnded)
+                throw new Exception("Only ended classes can be deleted");
+
+            _context.LiveClasses.Remove(liveClass);
+            await _context.SaveChangesAsync();
+        }
+
+
 
 
     }

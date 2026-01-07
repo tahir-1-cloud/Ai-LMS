@@ -1,6 +1,4 @@
 ﻿using Azure.Core;
-using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;

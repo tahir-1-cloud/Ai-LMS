@@ -92,5 +92,13 @@ namespace StudyApp.API.Controllers
             var result = await _service.GetLiveClassesForSession_Admin(sessionId);
             return Ok(result);
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            await _service.DeleteLiveClassAsync(id);
+            return Ok("Live class deleted");
+        }
+
     }
 }

@@ -11,6 +11,7 @@ import {
   getSessionLiveClasses,
   startLiveClass,
   endLiveClass,
+  deleteLiveClass,
 } from '@/services/liveClassService';
 
 import { LiveClass } from '@/types/liveclass';
@@ -154,6 +155,15 @@ const getNowPKForInput = () => {
   }
 };
 
+const handleDelete = async (id: number) => {
+  try {
+    await deleteLiveClass(id);
+    toast.success("Live class deleted");
+    load();
+  } catch (err: any) {
+    toast.error(err?.response?.data || "Failed to delete class");
+  }
+};
 
   const handleEnd = async (id: number) => {
     await endLiveClass(id);
@@ -237,6 +247,15 @@ const getNowPKForInput = () => {
                         End
                       </button>
                     </>
+                  )}
+                  {/* Ended */}
+                  {cls.isEnded && (
+                    <button
+                      onClick={() => handleDelete(cls.id)}
+                      className="bg-gray-700 px-3 py-1 text-white rounded"
+                    >
+                      Delete
+                    </button>
                   )}
                 </td>
               </tr>
