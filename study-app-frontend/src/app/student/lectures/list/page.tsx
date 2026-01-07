@@ -1,7 +1,15 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { Card, Spin, Empty, Button, DatePicker, Pagination } from 'antd';
+import {
+  Card,
+  Spin,
+  Empty,
+  Button,
+  DatePicker,
+  Pagination,
+  Tooltip
+} from 'antd';
 import { getAssignedLectures } from '@/services/studentLectureServices';
 import { AssignedLectureDto } from '@/types/studentLectures';
 import { PlayCircleOutlined, CalendarOutlined } from '@ant-design/icons';
@@ -13,7 +21,6 @@ export default function StudentAssignedLecturesPage() {
   const [lectures, setLectures] = useState<AssignedLectureDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
-
   const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -29,17 +36,13 @@ export default function StudentAssignedLecturesPage() {
     fetchLectures();
   }, []);
 
-  /* 🔹 Date filter */
   const filteredLectures = useMemo(() => {
     if (!selectedDate) return lectures;
-
-    return lectures.filter(l =>
-      l.assignedAt &&
-      dayjs(l.assignedAt).isSame(selectedDate, 'day')
+    return lectures.filter(
+      l => l.assignedAt && dayjs(l.assignedAt).isSame(selectedDate, 'day')
     );
   }, [lectures, selectedDate]);
 
-  /* 🔹 Pagination */
   const paginatedLectures = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE;
     return filteredLectures.slice(start, start + PAGE_SIZE);
@@ -53,14 +56,13 @@ export default function StudentAssignedLecturesPage() {
         <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-blue-900">
-              🎓 My Lectures
+              Assigned MDCAT Lectures
             </h1>
             <p className="text-gray-600 text-sm mt-1">
-              Access your assigned lectures session-wise & date-wise
+              Carefully curated lectures assigned for your preparation
             </p>
           </div>
 
-          {/* Date Filter */}
           <DatePicker
             allowClear
             placeholder="Filter by date"
@@ -73,25 +75,25 @@ export default function StudentAssignedLecturesPage() {
           />
         </div>
 
-        {/* Loading */}
+        {/* Loading / Empty */}
         {loading ? (
           <div className="flex justify-center py-24">
             <Spin size="large" />
           </div>
         ) : filteredLectures.length === 0 ? (
-          <Empty description="No lectures found" className="py-24" />
+          <Empty description="No assigned lectures found" className="py-24" />
         ) : (
           <>
             {/* Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
               {paginatedLectures.map((lecture) => {
-                const thumbnail =lecture.thumbnailUrl;
-                  
+                const thumbnail = lecture.thumbnailUrl;
+
                 return (
                   <Card
                     key={lecture.lectureId}
                     hoverable
-                    className="rounded-2xl shadow-md border-0 overflow-hidden bg-white"
+                    className="rounded-2xl shadow-sm border-0 overflow-hidden bg-white transition-all"
                     cover={
                       thumbnail ? (
                         <img
@@ -106,23 +108,30 @@ export default function StudentAssignedLecturesPage() {
                       )
                     }
                   >
-                    <div className="space-y-2">
-                      <h3 className="font-semibold text-lg line-clamp-1">
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-lg text-gray-800 line-clamp-1">
                         {lecture.lectureTitle}
                       </h3>
 
-                      <p className="text-sm text-gray-600 line-clamp-2">
-                        {lecture.description}
-                      </p>
+                      {/* Description */}
+                      <Tooltip title={lecture.description} placement="topLeft">
+                        <p className="text-sm text-gray-700 leading-relaxed line-clamp-3 cursor-help">
+                          {lecture.description}
+                        </p>
+                      </Tooltip>
 
                       <div className="flex items-center justify-between pt-3">
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-500 space-y-1">
                           <div>
-                            Session: <b>{lecture.sessionTitle}</b>
+                            Session:{' '}
+                            <span className="font-medium text-gray-700">
+                              {lecture.sessionTitle}
+                            </span>
                           </div>
                           {lecture.assignedAt && (
                             <div>
-                              Date: {dayjs(lecture.assignedAt).format('DD MMM YYYY')}
+                              Date:{' '}
+                              {dayjs(lecture.assignedAt).format('DD MMM YYYY')}
                             </div>
                           )}
                         </div>
@@ -157,27 +166,50 @@ export default function StudentAssignedLecturesPage() {
         )}
 
         {/* Video Modal */}
-        {selectedVideo && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-            <div className="bg-white rounded-2xl w-full max-w-3xl p-4 relative">
-              <Button
-                className="absolute right-3 top-3"
-                onClick={() => setSelectedVideo(null)}
-              >
-                Close
-              </Button>
+          {selectedVideo && (
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+        <div
+          className="bg-white rounded-xl w-full max-w-xl p-3 relative"
+          onContextMenu={(e) => e.preventDefault()} // basic download block
+        >
+          {/* ❌ Close Button */}
+          <button
+            onClick={() => setSelectedVideo(null)}
+            className="absolute -top-3 -right-3 bg-red-600 hover:bg-red-700 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg z-10"
+            aria-label="Close"
+          >
+            ✕
+          </button>
 
-              <div className="relative w-full pt-[56.25%]">
-                <iframe
-                  src={`${selectedVideo}?autoplay=1`}
-                  className="absolute inset-0 w-full h-full rounded-xl"
-                  allow="autoplay; fullscreen"
-                  allowFullScreen
-                />
-              </div>
-            </div>
-          </div>
-        )}
+          {/* Video */}
+          {/* <div className="relative w-full pt-[56.25%] select-none">
+            <iframe
+              src={`${selectedVideo}?autoplay=1`}
+              className="absolute inset-0 w-full h-full rounded-lg"
+              allow="autoplay; fullscreen"
+              allowFullScreen           
+            />
+          </div> */}
+
+          {/* Video */}
+        <div className="relative w-full pt-[56.25%] select-none">
+          <video
+            src={selectedVideo}
+            className="absolute inset-0 w-full h-full rounded-lg"
+            controls
+            autoPlay
+            playsInline
+            controlsList="nodownload"
+            disablePictureInPicture
+            onContextMenu={(e) => e.preventDefault()}
+          />
+        </div>
+
+
+        </div>
+      </div>
+    )}
+
       </div>
     </div>
   );

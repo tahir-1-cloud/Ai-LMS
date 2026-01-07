@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from 'next/navigation';
 import { toast } from "sonner";
 import { LectureDetailsModel } from "@/types/studentLectures";
 import { addStudentLectures } from "@/services/studentLectureServices";
 
 
 export default function LectureUploadForm() {
+   const router = useRouter();
   const [lecture, setLecture] = useState<LectureDetailsModel>({
     title: "",
     description: "",
@@ -35,7 +37,7 @@ export default function LectureUploadForm() {
 
       await addStudentLectures(formData as any);
       toast.success("Lecture uploaded successfully!");
-
+        router.push('/admin/studentlectures/list');
       // Reset form
       setLecture({
         title: "",

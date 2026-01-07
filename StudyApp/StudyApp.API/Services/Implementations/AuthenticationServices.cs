@@ -165,7 +165,7 @@ namespace StudyApp.API.Services.Implementations
                         new Claim("fullName", applicationUser.FullName),
                         new Claim("cnic", applicationUser.CNIC),
                         new Claim("emailaddress", applicationUser.EmailAddress),
-                         //new Claim("sessionId", applicationUser.SessionId.ToString()),
+                        new Claim("sessionId", applicationUser.SessionId.ToString()),
                         new Claim("session", applicationUser.Session.Title),
 
                         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())

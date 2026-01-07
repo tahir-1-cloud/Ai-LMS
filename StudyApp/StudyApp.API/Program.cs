@@ -26,37 +26,10 @@ builder.Services.AddDbContext<ApplicationDbContext>(option =>
     option.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-// Cloudinary
-//builder.Services.Configure<CloudinarySettings>(
-//    builder.Configuration.GetSection("CloudinarySettings"));
-
-//builder.Services.AddSingleton(x =>
-//{
-//    var config = x.GetRequiredService<IOptions<CloudinarySettings>>().Value;
-//    return new Cloudinary(
-//        new Account(
-//            config.CloudName,
-//            config.ApiKey,
-//            config.ApiSecret
-//        )
-//    );
-//});
-
 // BunnyCDN
 
 builder.Services.Configure<BunnySettings>(
     builder.Configuration.GetSection("BunnySettings"));
-
-//builder.Services.AddSingleton(x =>
-//{
-//    var config = x.GetRequiredService<IOptions<BunnySettings>>().Value;
-//    return new BunnyClient(
-//        config.StorageZoneName,
-//        config.ApiKey,
-//        config.CdnUrl
-//    );
-//});
-
 
 
 // Kestrel limits

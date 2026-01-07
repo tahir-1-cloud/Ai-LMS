@@ -27,8 +27,8 @@ const navItems: NavItem[] = [
     },
     {
         icon: <DocumentTextIcon  className="w-5 h-5"/>,
-        name: "Reports",
-        path: "/student/reports",
+        name: "Live Lectures",
+        path: "/student/livelectures/listing",
     },
 
 ];
