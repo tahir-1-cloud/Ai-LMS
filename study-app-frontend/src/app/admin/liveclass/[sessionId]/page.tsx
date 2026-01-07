@@ -141,10 +141,19 @@ const getNowPKForInput = () => {
   // Start / End
   // -------------------------
   const handleStart = async (cls: LiveClass) => {
+  try {
     await startLiveClass(cls.id);
-    toast.success('Live class started');
+    toast.success("Live class started");
     load();
-  };
+  } catch (err: any) {
+    const message =
+      err?.response?.data ||
+      "Unable to start live class";
+
+    toast.error(message);
+  }
+};
+
 
   const handleEnd = async (id: number) => {
     await endLiveClass(id);

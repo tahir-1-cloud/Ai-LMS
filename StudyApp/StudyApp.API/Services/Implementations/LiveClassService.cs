@@ -102,16 +102,17 @@ namespace StudyApp.API.Services.Implementations
                 .FirstOrDefaultAsync(x => x.Id == liveClassId);
 
             if (liveClass == null)
-                throw new Exception("Live class not found");
+                throw new InvalidOperationException("Live class not found");
 
             if (liveClass.IsEnded)
-                throw new Exception("Live class already ended");
+                throw new InvalidOperationException("Live class already ended");
 
-            // ⏱️ Optional: prevent starting too early (5 min buffer)
+            // ⏱️ Allow start within 5 minutes window
             if (DateTime.UtcNow < liveClass.ScheduledAt.AddMinutes(-5))
-                throw new Exception("You cannot start this class before its scheduled time");
+                throw new InvalidOperationException(
+                    "You can only start the class within 5 minutes of its scheduled time"
+                );
 
-            // 🔒 Only one running per session
             var alreadyRunning = await _context.LiveClasses.AnyAsync(x =>
                 x.SessionId == liveClass.SessionId &&
                 x.IsStarted &&
@@ -119,11 +120,14 @@ namespace StudyApp.API.Services.Implementations
                 x.Id != liveClassId);
 
             if (alreadyRunning)
-                throw new Exception("Another live class is already running for this session");
+                throw new InvalidOperationException(
+                    "Another live class is already running for this session"
+                );
 
             liveClass.IsStarted = true;
             await _context.SaveChangesAsync();
         }
+
 
         public async Task EndLiveClassAsync(int liveClassId)
         {

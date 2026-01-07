@@ -10,25 +10,28 @@ const axiosInstance = axios.create({
   },
 });
 
-// REQUEST: attach token
+// REQUEST INTERCEPTOR
 axiosInstance.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
+    const isAdmin = localStorage.getItem("__sa") === "a9f3e7c1b2";
     const token = localStorage.getItem("token");
-    if (token) {
+
+    // 🚫 Admin → NEVER attach JWT
+    if (!isAdmin && token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
   return config;
 });
 
-// RESPONSE: handle session invalidation
+// RESPONSE INTERCEPTOR
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       if (typeof window !== "undefined") {
         localStorage.clear();
-        window.location.href = "/login"; // ✅ SAFE IN APP ROUTER
+        window.location.href = "/login";
       }
     }
     return Promise.reject(error);

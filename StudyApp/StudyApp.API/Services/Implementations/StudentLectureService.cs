@@ -1,7 +1,7 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Mapster;
-using StudyApp.API.Cloudinary;
+//using StudyApp.API.Cloudinary;
 using StudyApp.API.Domain.Entities;
 using StudyApp.API.Domain.Interfaces;
 using StudyApp.API.Dto;

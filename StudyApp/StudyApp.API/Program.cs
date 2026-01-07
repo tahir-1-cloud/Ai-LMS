@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using StudyApp.API.Cloudinary;
+//using StudyApp.API.Cloudinary;
 using StudyApp.API.Data;
 using StudyApp.API.Domain.Interfaces;
 using StudyApp.API.Hubs;

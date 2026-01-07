@@ -43,9 +43,17 @@ namespace StudyApp.API.Controllers
         [HttpPost("{id}/start")]
         public async Task<IActionResult> Start(int id)
         {
-            await _service.StartLiveClassAsync(id);
-            return Ok();
+            try
+            {
+                await _service.StartLiveClassAsync(id);
+                return Ok();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message); // 🔥 THIS IS KEY
+            }
         }
+
 
         [HttpPost("{id}/end")]
         public async Task<IActionResult> End(int id)

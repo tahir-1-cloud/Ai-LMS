@@ -7,11 +7,9 @@ export const useAdminAuth = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const username = localStorage.getItem("username");
-    const password = localStorage.getItem("password");
+    const isAdmin = localStorage.getItem("__sa") === "a9f3e7c1b2";
 
-    // Hardcoded admin check
-    if (!(username === "admin" && password === "12345")) {
+    if (!isAdmin) {
       router.replace("/login");
     }
   }, []);
