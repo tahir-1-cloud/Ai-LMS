@@ -14,11 +14,13 @@ export const metadata: Metadata = {
   title: "JunoonMdcat",
   description: "JunoonMdcat",
     icons: {
-    icon: "fav.ico", // <- your favicon file in /public
+    icon: "favi.ico", // <- your favicon file in /public
   },
 };
 
 export default function RootLayout({
+
+
                                        children,
                                    }: Readonly<{
     children: React.ReactNode;
