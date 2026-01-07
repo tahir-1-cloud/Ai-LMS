@@ -66,6 +66,7 @@ const testimonials = [
     university:"Ayub Medical College Abbottabad",
     session: "Session 2023-2024",
     marks: "175 / 200",
+    img: "/images/Landingpage/HifzaZahir.jpg",
   },
    {
     name: "Hania Waseem",
@@ -73,6 +74,7 @@ const testimonials = [
     university:"Poonch Medical College Rawlakot",
     session: "Session 2023-2024",
     marks: "180 / 200",
+    img: "/images/Landingpage/Hania.jpeg",
   },
    {
     name: "Uzair Ali",

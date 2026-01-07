@@ -15,9 +15,12 @@ import { AssignedLectureDto } from '@/types/studentLectures';
 import { PlayCircleOutlined, CalendarOutlined } from '@ant-design/icons';
 import dayjs, { Dayjs } from 'dayjs';
 
+import { useStudentAuth } from "@/hooks/useStudentAuth";
+
 const PAGE_SIZE = 6;
 
 export default function StudentAssignedLecturesPage() {
+   useStudentAuth();
   const [lectures, setLectures] = useState<AssignedLectureDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);

@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import ComponentCard from '@/components/common/ComponentCard';
 import { getStudentLiveClasses } from '@/services/liveClassService';
 import { LiveClass } from '@/types/liveclass';
-
+import { useStudentAuth } from "@/hooks/useStudentAuth";
 /**
  * Format UTC → Pakistan Time (SAFE for Vercel)
  */
@@ -23,6 +23,7 @@ const formatPKTime = (utcString: string) => {
 };
 
 export default function StudentLiveLecturesPage() {
+   useStudentAuth();
   const [liveClasses, setLiveClasses] = useState<LiveClass[]>([]);
   const [loading, setLoading] = useState(true);
 
