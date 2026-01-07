@@ -130,6 +130,7 @@ namespace StudyApp.API.Services.Implementations
         }
 
 
+
         public async Task EndLiveClassAsync(int liveClassId)
         {
             var liveClass = await _context.LiveClasses.FindAsync(liveClassId);
