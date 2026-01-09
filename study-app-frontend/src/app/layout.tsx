@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: "JunoonMdcat",
   description: "JunoonMdcat",
     icons: {
-    icon: "favi.ico", // <- your favicon file in /public
+    icon: "favicon.ico", // <- your favicon file in /public
   },
 };
 

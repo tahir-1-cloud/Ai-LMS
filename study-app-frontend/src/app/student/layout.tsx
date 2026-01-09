@@ -4,12 +4,26 @@ import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
 import AppHeader from "@/layout/student/AppHeader";
 import AppSidebar from "@/layout/student/AppSidebar";
 import Backdrop from "@/layout/student/Backdrop";
-import React from "react";
+import React, { useEffect } from "react";
 import { ThemeProvider } from "@/context/ThemeContext";
 import AuthGuard from "@/components/AuthGuard";
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
+
+
+   // Set favicon and title dynamically
+    useEffect(() => {
+        // Set favicon
+        const link = document.querySelector("link[rel*='icon']") as HTMLLinkElement || document.createElement('link');
+        link.type = 'image/x-icon';
+        link.rel = 'icon';
+        link.href = '/favicon.ico';
+        document.getElementsByTagName('head')[0].appendChild(link);
+
+        // Set title
+        document.title = 'Admin Dashboard';
+    }, []);
 
   const mainContentMargin = isMobileOpen
     ? "ml-0"

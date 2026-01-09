@@ -23,16 +23,17 @@ const instructors = [
     img: "/images/Landingpage/exprtshafiq1.jpg",
   },
   {
-    name: "Miss Ayesha Noor",
+    name: "Ayesha Habib Ullah ",
     subject: "English Trainer",
     exp: "6+ Years Experience",
-    img: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=400&h=400&fit=crop",
+    img: "/images/Landingpage/Ayesha.jpeg",
+
   },
   {
     name: "Dr. Farah Nadeem",
     subject: "Mathematics Expert",
     exp: "9+ Years Experience",
-    img: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?w=400&h=400&fit=crop",
+    img: "/images/Landingpage/Farah.jpeg",
   },
 ];
 
