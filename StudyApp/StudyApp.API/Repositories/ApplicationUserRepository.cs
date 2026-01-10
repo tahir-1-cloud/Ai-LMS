@@ -67,10 +67,12 @@ namespace StudyApp.API.Repositories
         public async Task<Session?> GetSessionByUserIdAsync(int userId)
         {
             return await _context.ApplicationUsers
+                .IgnoreQueryFilters() // 🔥 bypass global filters
                 .Where(x => x.Id == userId)
                 .Select(x => x.Session)
                 .FirstOrDefaultAsync();
         }
+
 
 
         public async Task ExpireAllSessionsAsync(long userId)

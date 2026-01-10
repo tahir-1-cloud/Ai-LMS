@@ -87,6 +87,7 @@ export async function endLiveClass(id: number): Promise<void> {
     throw error;
   }
 }
+
 export const deleteLiveClass = async (id: number) => {
   return axiosInstance.delete(`/liveclass/Delete/${id}`);
 };

@@ -194,6 +194,8 @@ namespace StudyApp.API.Services.Implementations
                 return true;
 
             student.IsBlocked = isBlocked;
+            student.IsActive = !isBlocked; // 🔥 key change
+
             await _userRepository.UpdateAsync(student);
 
             if (isBlocked)
@@ -203,6 +205,7 @@ namespace StudyApp.API.Services.Implementations
 
             return true;
         }
+
         public async Task<bool> LogoutAsync(ClaimsPrincipal user)
         {
             var loginIdClaim = user.FindFirst("loginId");
