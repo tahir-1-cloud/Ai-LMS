@@ -82,7 +82,7 @@ const Footer = () => {
                 </span>
               </p>
 
-              <p>Phone: +92 0333-4030107</p>
+              <p>Phone: +923075944779</p>
             </div>
 
 

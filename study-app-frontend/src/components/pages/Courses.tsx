@@ -54,36 +54,55 @@ export default function CoursesPage() {
   };
 
   return (
-    <section className="relative min-h-screen bg-gradient-to-b from-[#e6f2ff] via-[#f5faff] to-[#fefefe] py-16">
-      <div className="text-center mb-16 px-6">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-[#22418c] mb-4 drop-shadow-md">
+    <section className="relative min-h-screen bg-gradient-to-b from-[#e6f2ff] via-[#f5faff] to-[#fefefe] py-10 md:py-16">
+
+      {/* HEADER */}
+      <div className="text-center mb-10 md:mb-16 px-4 sm:px-6">
+
+        <h2 className="text-2xl sm:text-3xl md:text-5xl font-extrabold text-[#22418c] mb-3 md:mb-4">
           🌟 All MDCAT Courses
-        </h1>
-        <p className="text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
+        </h2>
+
+        <p className="text-sm sm:text-base md:text-lg text-gray-700 max-w-3xl mx-auto leading-relaxed">
           Explore all available lectures for MDCAT preparation. Watch videos, view images, and read descriptions.
         </p>
+          <div className="mt-4 h-1 w-16 sm:w-20 bg-gradient-to-r from-yellow-400 to-blue-800 mx-auto rounded-full" />
+
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-20 text-gray-600 text-lg font-medium">
+        <div className="flex justify-center py-16 md:py-20 text-gray-600 text-base md:text-lg font-medium">
           Loading lectures...
         </div>
       ) : (
         <>
-          {/* Lectures Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 max-w-7xl mx-auto px-6">
+          {/* GRID */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10 max-w-7xl mx-auto px-4 sm:px-6">
+
             {currentLectures.map((lecture) => {
               const embedUrl =
                 activeVideo === lecture.title
                   ? `${toEmbedUrl(lecture.youtubeUrl)}?autoplay=1&modestbranding=1&rel=0`
                   : "";
+
               return (
                 <div
                   key={lecture.id}
-                  className="relative bg-white rounded-2xl shadow-lg hover:shadow-2xl border border-blue-100 hover:border-blue-400 transform hover:-translate-y-2 transition-all duration-300 overflow-hidden group"
+                  className="
+                    relative bg-white
+                    rounded-2xl md:rounded-3xl
+                    shadow-md hover:shadow-2xl
+                    border border-blue-100
+                    hover:border-blue-400
+                    transition-all duration-300
+                    overflow-hidden
+                    group
+                  "
                 >
-                  {/* Image / Video */}
-                  <div className="relative w-full h-64 bg-blue-100 overflow-hidden">
+
+                  {/* MEDIA */}
+                  <div className="relative w-full h-48 sm:h-56 md:h-64 bg-blue-100 overflow-hidden">
+
                     {activeVideo === lecture.title ? (
                       <iframe
                         className="w-full h-full"
@@ -98,89 +117,90 @@ export default function CoursesPage() {
                           <img
                             src={`${process.env.NEXT_PUBLIC_BASE_URL}${lecture.imageUrl}`}
                             alt={lecture.title}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+                          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400 text-sm">
                             No Image
                           </div>
                         )}
+
+                        {/* Play Button */}
                         <button
                           onClick={() => setActiveVideo(lecture.title)}
-                          className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300"
+                          className="
+                            absolute inset-0
+                            flex items-center justify-center
+                            bg-black/40
+                            opacity-100 sm:opacity-0 sm:group-hover:opacity-100
+                            transition
+                          "
                         >
-                          <div className="bg-gradient-to-r from-yellow-400 to-blue-600 text-white rounded-full w-16 h-16 flex items-center justify-center shadow-lg hover:scale-110 transition-transform duration-300">
+                          <div className="bg-gradient-to-r from-yellow-400 to-blue-600 text-white rounded-full w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 flex items-center justify-center shadow-lg">
                             ▶
                           </div>
                         </button>
+
                       </>
                     )}
+
                   </div>
 
-                  {/* Card Content */}
-                  <div className="p-6 text-center relative">
-                    <h3 className="text-2xl font-semibold text-[#22418c] mb-2">
+                  {/* CONTENT */}
+                  <div className="p-4 sm:p-5 md:p-6 text-center">
+
+                    <h3 className="text-lg sm:text-xl md:text-2xl font-semibold text-[#22418c] mb-2">
                       {lecture.title}
                     </h3>
 
-                    {/* Description with hover */}
-                    <div className="relative">
-                      <p className="text-gray-600 mb-4 line-clamp-2">
-                        {lecture.description}
-                      </p>
-                      <div className="absolute left-1/2 transform -translate-x-1/2 -translate-y-full mt-2 w-64 p-3 bg-white border border-gray-200 shadow-lg rounded-lg opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-300 z-20">
-                        {lecture.description}
-                      </div>
-                    </div>
+                    <p className="text-gray-600 text-xs sm:text-sm md:text-base mb-4 line-clamp-2">
+                      {lecture.description}
+                    </p>
 
-                    {/* Video Button */}
                     {activeVideo === lecture.title ? (
                       <button
                         onClick={() => setActiveVideo(null)}
-                        className="bg-red-500 text-white font-semibold px-6 py-2 rounded-full hover:bg-red-400 transition shadow-md mt-2"
+                        className="bg-red-500 text-white font-semibold px-4 sm:px-6 py-2 rounded-full hover:bg-red-400 transition shadow-md text-sm"
                       >
                         ✖ Close Video
                       </button>
                     ) : (
                       <button
                         onClick={() => setActiveVideo(lecture.title)}
-                        className="bg-blue-600 text-white font-semibold px-6 py-2 rounded-full hover:bg-blue-700 transition shadow-md mt-2"
+                        className="bg-blue-600 text-white font-semibold px-4 sm:px-6 py-2 rounded-full hover:bg-blue-700 transition shadow-md text-sm"
                       >
                         ▶ Watch Lecture
                       </button>
                     )}
+
                   </div>
                 </div>
               );
             })}
+
           </div>
 
-          {/* Pagination */}
-       {pageCount > 1 && (
-        <div className="flex justify-center mt-12">
-            <ReactPaginate
-            previousLabel={"← Previous"}
-            nextLabel={"Next →"}
-            breakLabel={"..."}
-            pageCount={pageCount}
-            marginPagesDisplayed={2}
-            pageRangeDisplayed={3}
-            onPageChange={handlePageClick}
-            containerClassName={"flex items-center space-x-2"}
-            pageClassName={"px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-blue-100 hover:text-blue-700 cursor-pointer transition-colors duration-200"}
-            pageLinkClassName={"text-gray-700 hover:text-blue-700"}
-            previousClassName={"px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-blue-100 hover:text-blue-700 cursor-pointer transition-colors duration-200"}
-            previousLinkClassName={"text-gray-700 hover:text-blue-700"}
-            nextClassName={"px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-blue-100 hover:text-blue-700 cursor-pointer transition-colors duration-200"}
-            nextLinkClassName={"text-gray-700 hover:text-blue-700"}
-            breakClassName={"px-4 py-2 text-gray-500"}
-            activeClassName={"!bg-blue-600 !text-white shadow-md"}
-            activeLinkClassName={"!text-white"}
-            disabledClassName={"opacity-40 cursor-not-allowed"}
-            disabledLinkClassName={"text-gray-400"}
-            />
-        </div>
-        )}
+          {/* PAGINATION */}
+          {pageCount > 1 && (
+            <div className="flex justify-center mt-10 md:mt-12 px-4">
+              <ReactPaginate
+                previousLabel={"← Prev"}
+                nextLabel={"Next →"}
+                breakLabel={"..."}
+                pageCount={pageCount}
+                marginPagesDisplayed={1}
+                pageRangeDisplayed={2}
+                onPageChange={handlePageClick}
+                containerClassName={"flex flex-wrap justify-center gap-2"}
+                pageClassName={"px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-blue-100 hover:text-blue-700 transition text-sm"}
+                activeClassName={"!bg-blue-600 !text-white"}
+                previousClassName={"px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-100 rounded-lg text-sm"}
+                nextClassName={"px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-100 rounded-lg text-sm"}
+                breakClassName={"px-2 text-gray-500"}
+              />
+            </div>
+          )}
+
         </>
       )}
     </section>

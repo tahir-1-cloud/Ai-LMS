@@ -18,29 +18,24 @@ export default function TestPage({ mockTestId }: TestPageProps) {
   const [submitted, setSubmitted] = useState(false);
   const [result, setResult] = useState<TestResult | null>(null);
   const [loading, setLoading] = useState(true);
-  const [timeLeft, setTimeLeft] = useState(10 * 60); // 10 minutes
+  const [timeLeft, setTimeLeft] = useState(10 * 60);
   const [timerActive, setTimerActive] = useState(false);
-  const timerRef = useRef<number | null>(null); // store interval ID
+  const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!loading && !timerActive) {
-      setTimerActive(true);
-    }
+    if (!loading && !timerActive) setTimerActive(true);
   }, [loading, timerActive]);
 
   useEffect(() => {
     if (!timerActive) return;
 
     if (timeLeft <= 0) {
-      stopTimer();
+      if (timerRef.current) clearInterval(timerRef.current);
       Swal.fire({
         icon: "warning",
         title: "Time's up!",
         text: "Your 10 minutes are over. Retry the test.",
-        confirmButtonText: "Retry",
-      }).then(() => {
-        window.location.reload();
-      });
+      }).then(() => window.location.reload());
       return;
     }
 
@@ -50,21 +45,15 @@ export default function TestPage({ mockTestId }: TestPageProps) {
       }, 1000);
     }
 
-    return () => stopTimer();
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [timeLeft, timerActive]);
 
-  const stopTimer = () => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-  };
-
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-  };
+  const formatTime = (s: number) =>
+    `${Math.floor(s / 60).toString().padStart(2, "0")}:${(s % 60)
+      .toString()
+      .padStart(2, "0")}`;
 
   useEffect(() => {
     const fetchQuestions = async () => {
@@ -73,7 +62,6 @@ export default function TestPage({ mockTestId }: TestPageProps) {
         setQuestions(data);
         setAnswers(data.map(q => ({ questionId: q.id, optionId: -1 })));
       } catch (err) {
-        console.error(err);
         Swal.fire("Error", "Failed to load questions", "error");
       } finally {
         setLoading(false);
@@ -82,146 +70,156 @@ export default function TestPage({ mockTestId }: TestPageProps) {
     fetchQuestions();
   }, [mockTestId]);
 
-  const handleSelect = (qIndex: number, optionId: number) => {
-    const newAnswers = [...answers];
-    newAnswers[qIndex] = { questionId: questions[qIndex].id, optionId };
-    setAnswers(newAnswers);
+  const handleSelect = (i: number, optionId: number) => {
+    const copy = [...answers];
+    copy[i] = { questionId: questions[i].id, optionId };
+    setAnswers(copy);
   };
 
   const handleSubmit = async () => {
-    if (questions.length === 0) {
-      Swal.fire("No Questions", "There are no questions available to attempt.", "warning");
-      return;
-    }
+    if (questions.length === 0) return;
+
     if (answers.some(a => a.optionId === -1)) {
-      Swal.fire("Incomplete", "Please attempt all questions before submitting.", "warning");
+      Swal.fire("Incomplete", "Attempt all questions", "warning");
       return;
     }
 
     try {
-      stopTimer(); // ✅ Stop timer when submitting
-      const dto = { mockTestId, answers };
-      const res = await submitTest(dto);
+      const res = await submitTest({ mockTestId, answers });
       setResult(res);
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (err) {
-      console.error(err);
-      Swal.fire("Error", "Something went wrong while submitting your test.", "error");
+    } catch {
+      Swal.fire("Error", "Submission failed", "error");
     }
   };
 
-  if (loading) return <p className="text-center mt-10 text-lg">Loading questions...</p>;
+  if (loading)
+    return (
+      <p className="text-center mt-10 text-gray-600">
+        Loading questions...
+      </p>
+    );
 
   const optionLabels = ["A", "B", "C", "D", "E"];
 
   return (
-    <section className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-yellow-50 flex items-center justify-center px-4 py-10 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-t from-blue-100/60 via-white to-yellow-100/40 blur-2xl -z-10"></div>
+    <section className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 px-3 sm:px-6 py-6 sm:py-10 flex justify-center">
 
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
+        initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-        className="bg-white border border-blue-200 rounded-3xl shadow-2xl p-8 md:p-12 max-w-4xl w-full relative overflow-hidden"
+        className={`bg-white w-full max-w-4xl rounded-2xl shadow-lg border border-blue-100 p-4 sm:p-8 ${
+          questions.length === 0 ? "min-h-[300px] sm:min-h-[400px]" : ""
+        }`}
       >
-        <div className="text-center mb-10">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-[#22418c] mb-4 drop-shadow-md">
+
+        {/* HEADER */}
+        <div className="text-center mb-6">
+          <h2 className="text-xl sm:text-3xl font-bold text-[#22418c]">
             ✏️ Mock Test
           </h2>
-          <p className="text-gray-600 max-w-lg mx-auto">
-            Attempt this mock test with a professional, entry-test-ready interface, and enroll to achieve 100% preparation.
+          <p className="text-gray-600 text-sm sm:text-base">
+            Attempt like real MDCAT exam
           </p>
         </div>
-        <div className="text-right mb-6 text-xl font-bold text-blue-600">
-          ⏱ Time Left: {formatTime(timeLeft)}
+
+        {/* TIMER */}
+        <div className="flex justify-end mb-4">
+          <div className="bg-blue-600 text-white px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-semibold">
+            ⏱ {formatTime(timeLeft)}
+          </div>
         </div>
 
         <AnimatePresence mode="wait">
-          {!submitted ? (
-            <motion.div key="questions" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-              <div className="space-y-6">
+
+          {/* EMPTY STATE */}
+          {questions.length === 0 ? (
+            <div className="text-center py-10 sm:py-16">
+              <p className="text-gray-500 text-base sm:text-lg">
+                No questions yet 😕
+              </p>
+            </div>
+          ) : !submitted ? (
+            <motion.div key="questions">
+
+              {/* QUESTIONS */}
+              <div className="space-y-4 sm:space-y-6">
+
                 {questions.map((q, i) => (
-                  <div key={i} className="bg-blue-50/30 border border-blue-100 rounded-2xl p-5 hover:shadow-md transition-shadow">
-                    <p className="font-semibold text-gray-800 mb-4 text-lg">{i + 1}. {q.title}</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div
+                    key={i}
+                    className="bg-blue-50/40 border border-blue-100 rounded-xl p-3 sm:p-5"
+                  >
+
+                    <p className="font-semibold text-gray-800 text-sm sm:text-base mb-3">
+                      {i + 1}. {q.title}
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+
                       {q.mockOptions.map((opt, idx) => (
                         <label
                           key={opt.id}
-                          className={`flex items-center gap-3 border-2 rounded-xl px-4 py-2 transition-all duration-200 cursor-pointer ${
+                          className={`flex items-center gap-2 p-2 sm:p-3 rounded-lg border cursor-pointer text-sm transition ${
                             answers[i]?.optionId === opt.id
-                              ? "bg-gradient-to-r from-blue-100 to-blue-200 border-blue-500 text-blue-800 shadow-md"
-                              : "border-gray-200 hover:bg-yellow-50 hover:border-yellow-300"
+                              ? "bg-blue-100 border-blue-500"
+                              : "bg-white border-gray-200"
                           }`}
                         >
                           <input
                             type="radio"
-                            name={`question-${i}`}
-                            value={opt.id}
                             checked={answers[i]?.optionId === opt.id}
                             onChange={() => handleSelect(i, opt.id)}
                             className="accent-blue-600"
                           />
-                          <span className="font-medium">{optionLabels[idx]}. {opt.optionText}</span>
+                          <span>
+                            {optionLabels[idx]}. {opt.optionText}
+                          </span>
                         </label>
                       ))}
+
                     </div>
                   </div>
                 ))}
+
               </div>
 
-              <div className="text-center mt-10">
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={handleSubmit}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-10 py-3 rounded-full font-semibold text-lg shadow-md hover:shadow-lg transition-all duration-300"
-                >
-                  Submit Test
-                </motion.button>
-              </div>
-            </motion.div>
-          ) : (
-            <motion.div key="results" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-center space-y-6">
-              <div className="flex justify-center">
-                <div className="bg-gradient-to-r from-yellow-200 to-blue-100 p-6 rounded-full shadow-lg">
-                  <Trophy size={60} className="text-blue-700" />
+              {/* SUBMIT (ONLY IF QUESTIONS EXIST) */}
+              {questions.length > 0 && (
+                <div className="text-center mt-6 sm:mt-8">
+                  <button
+                    onClick={handleSubmit}
+                    className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-6 sm:px-10 py-2 sm:py-3 rounded-full font-semibold text-sm sm:text-base hover:scale-105 transition"
+                  >
+                    Submit Test
+                  </button>
                 </div>
-              </div>
+              )}
 
-              <h3 className="text-3xl font-bold text-green-600">
-                🎉 You scored {result?.correct} / {result?.total} ({result?.percentage}%)
+            </motion.div>
+
+          ) : (
+            <motion.div className="text-center space-y-5">
+
+              <Trophy className="mx-auto text-blue-600" size={50} />
+
+              <h3 className="text-xl sm:text-3xl font-bold text-green-600">
+                {result?.correct}/{result?.total} ({result?.percentage}%)
               </h3>
-
-              <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 text-left shadow-sm">
-                <h4 className="text-blue-700 font-semibold mb-3 flex items-center gap-2">
-                  <BookOpenCheck className="text-blue-600" /> Correct Answers
-                </h4>
-                <ul className="list-disc list-inside space-y-2 text-gray-700">
-                  {questions.map((q, i) => {
-                    const userAnswer = answers[i]?.optionId;
-                    const correctOption = q.mockOptions.find(opt => opt.isCorrect);
-                    return (
-                      <li key={i}>
-                        {q.title} —{" "}
-                        <span className={`${userAnswer === correctOption?.id ? "text-green-600" : "text-red-600 font-medium"}`}>
-                          {correctOption?.optionText}
-                        </span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
 
               <Link
                 href="/enrollment"
-                className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-yellow-500 text-blue-900 px-8 py-3 rounded-full font-bold shadow-md hover:shadow-lg hover:from-yellow-500 hover:to-yellow-400 transition-all duration-300"
+                className="inline-flex items-center gap-2 bg-yellow-400 text-blue-900 px-6 py-2 rounded-full font-semibold"
               >
-                <ArrowLeftRight size={20} /> Enroll for Complete Preparation
+                <ArrowLeftRight size={16} /> Enroll Now
               </Link>
+
             </motion.div>
           )}
+
         </AnimatePresence>
+
       </motion.div>
     </section>
   );
