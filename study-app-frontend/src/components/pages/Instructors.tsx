@@ -1,6 +1,5 @@
-// components/Instructors.tsx
-
 "use client";
+
 import { useEffect, useRef, useState } from "react";
 
 const instructors = [
@@ -23,11 +22,10 @@ const instructors = [
     img: "/images/Landingpage/exprtshafiq1.jpg",
   },
   {
-    name: "Ayesha Habib Ullah ",
+    name: "Ayesha Habib Ullah",
     subject: "English Trainer",
     exp: "6+ Years Experience",
     img: "/images/Landingpage/Ayesha.jpeg",
-
   },
   {
     name: "Dr. Farah Nadeem",
@@ -45,75 +43,130 @@ const Instructors = () => {
     const container = scrollRef.current;
     if (!container) return;
 
-    let autoScrollTimer: NodeJS.Timeout;
+    const getStep = () => {
+      if (window.innerWidth < 640) {
+        return container.clientWidth; // mobile = full card
+      }
+      return 280; // desktop/tablet
+    };
 
     const autoScroll = () => {
-      if (!isUserInteracting) {
-        const nextScroll = container.scrollLeft + 300; // move one card forward smoothly
-        container.scrollTo({
-          left:
-            nextScroll >= container.scrollWidth - container.clientWidth
-              ? 0
-              : nextScroll,
-          behavior: "smooth",
-        });
+      if (isUserInteracting) return;
+
+      const maxScroll =
+        container.scrollWidth - container.clientWidth;
+
+      const step = getStep();
+      const nextScroll = container.scrollLeft + step;
+
+      if (container.scrollLeft >= maxScroll) {
+        container.scrollTo({ left: 0, behavior: "smooth" });
+      } else {
+        container.scrollBy({ left: step, behavior: "smooth" });
       }
     };
 
-    // Auto-scroll every 5 seconds
-    autoScrollTimer = setInterval(autoScroll, 2000);
+    const timer = setInterval(autoScroll, 2500);
 
-    const handleUserStart = () => setIsUserInteracting(true);
-    const handleUserEnd = () => setTimeout(() => setIsUserInteracting(false), 3000);
+    const start = () => setIsUserInteracting(true);
+    const end = () =>
+      setTimeout(() => setIsUserInteracting(false), 2500);
 
-    container.addEventListener("mousedown", handleUserStart);
-    container.addEventListener("touchstart", handleUserStart);
-    container.addEventListener("mouseup", handleUserEnd);
-    container.addEventListener("touchend", handleUserEnd);
-    container.addEventListener("wheel", handleUserStart, { passive: true });
+    container.addEventListener("mousedown", start);
+    container.addEventListener("touchstart", start);
+    container.addEventListener("mouseup", end);
+    container.addEventListener("touchend", end);
+    container.addEventListener("wheel", start, { passive: true });
 
     return () => {
-      clearInterval(autoScrollTimer);
-      container.removeEventListener("mousedown", handleUserStart);
-      container.removeEventListener("touchstart", handleUserStart);
-      container.removeEventListener("mouseup", handleUserEnd);
-      container.removeEventListener("touchend", handleUserEnd);
-      container.removeEventListener("wheel", handleUserStart);
+      clearInterval(timer);
+
+      container.removeEventListener("mousedown", start);
+      container.removeEventListener("touchstart", start);
+      container.removeEventListener("mouseup", end);
+      container.removeEventListener("touchend", end);
+      container.removeEventListener("wheel", start);
     };
   }, [isUserInteracting]);
 
   return (
-    <section className="bg-gradient-to-b from-[#eef3ff] to-[#e3eaff] py-20 px-6 relative overflow-hidden">
+    <section className="bg-slate-50 py-14 md:py-20 px-4 sm:px-6">
       <div className="max-w-7xl mx-auto text-center">
-        <h2 className="text-4xl md:text-5xl font-extrabold text-[#22418c] mb-6 drop-shadow-md">
+
+        {/* Header */}
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-950">
           Meet Our Expert Instructors
         </h2>
-        <p className="text-gray-600 text-base md:text-lg mb-12 max-w-2xl mx-auto">
-          Learn from the best! Our experienced instructors are passionate about helping you achieve top results in your entry tests.
+
+        <p className="mt-3 text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
+          Learn from experienced educators who guide students toward success.
         </p>
 
+        <div className="mt-4 h-1 w-20 bg-gradient-to-r from-yellow-400 to-blue-800 mx-auto rounded-full" />
+
+        {/* Carousel */}
         <div
           ref={scrollRef}
-          className="flex gap-8 overflow-x-auto scroll-smooth no-scrollbar pb-4 px-2 cursor-grab active:cursor-grabbing"
+          className="
+            flex gap-6 md:gap-8
+            overflow-x-auto
+            scroll-smooth
+            no-scrollbar
+            mt-12
+            px-2
+            cursor-grab active:cursor-grabbing
+          "
         >
           {instructors.concat(instructors).map((inst, i) => (
             <div
               key={i}
-              className="min-w-[260px] bg-white/90 backdrop-blur-sm border-2 border-[#a6c8ff] rounded-2xl shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 p-6 text-center"
+              className="
+                min-w-[85%] sm:min-w-[260px]
+                bg-white
+                border border-slate-200
+                rounded-3xl
+                shadow-md
+                hover:shadow-2xl
+                transition-all duration-300
+                hover:-translate-y-2
+                p-6
+                text-center
+                group
+              "
             >
               <img
                 src={inst.img}
                 alt={inst.name}
-                className="w-28 h-28 rounded-full mx-auto mb-5 object-cover border-[3px] border-[#a6c8ff] shadow-sm"
+                className="
+                  w-24 h-24 sm:w-28 sm:h-28
+                  rounded-full
+                  mx-auto
+                  object-cover
+                  border-4 border-blue-800
+                  shadow-md
+                  group-hover:scale-105
+                  transition
+                "
               />
-              <h3 className="text-lg font-semibold text-[#22418c] mb-1">
+
+              <h3 className="
+                mt-5 text-lg font-bold text-blue-950
+                group-hover:text-blue-700
+              ">
                 {inst.name}
               </h3>
-              <p className="text-gray-600 text-sm mb-1">{inst.subject}</p>
-              <p className="text-gray-500 text-xs">{inst.exp}</p>
+
+              <p className="text-slate-600 text-sm mt-1">
+                {inst.subject}
+              </p>
+
+              <p className="text-slate-500 text-xs mt-1">
+                {inst.exp}
+              </p>
             </div>
           ))}
         </div>
+
       </div>
     </section>
   );

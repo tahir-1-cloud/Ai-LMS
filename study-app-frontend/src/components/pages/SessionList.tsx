@@ -1,10 +1,10 @@
-// src/components/pages/SessionsPage.tsx
 'use client';
 
 import React, { useEffect, useState } from "react";
 import dayjs from "dayjs";
 import { getAllSessions } from "@/services/sessionService";
 import type { Session } from "@/types/session";
+import Loader from "@/components/common/Loader";
 
 const SessionList: React.FC = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -26,62 +26,114 @@ const SessionList: React.FC = () => {
   }, []);
 
   return (
-    <section className="bg-blue-50 min-h-screen py-14">
-      <div className="max-w-7xl mx-auto px-4">
+    <section className="bg-slate-50 py-12 md:py-16">
+      
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
         {/* Header */}
-        <h1 className="text-4xl font-extrabold text-center mb-12 text-blue-900">
-          🌟 Available Learning Sessions
-        </h1>
+        <div className="text-center mb-10 md:mb-12">
+
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-950">
+            Available Learning Sessions
+          </h2>
+
+          <p className="mt-3 text-sm sm:text-base text-slate-600 max-w-2xl mx-auto">
+            Explore academic sessions, learning tracks, and structured
+            educational programs designed for student success.
+          </p>
+         <div className="mt-4 h-1 w-20 bg-gradient-to-r from-yellow-400 to-blue-800 mx-auto rounded-full" />
+        </div>
+
 
         {loading ? (
-          <p className="text-center text-blue-700 text-lg">
-            Loading sessions...
-          </p>
+            <Loader/>
         ) : sessions.length === 0 ? (
-          <p className="text-center text-gray-600 text-lg">
+          <p className="text-center text-slate-500 text-base sm:text-lg">
             No sessions available.
           </p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
+
             {sessions.map((session) => (
               <div
                 key={session.id}
-                className="relative bg-white rounded-2xl border border-blue-100 shadow-md 
-                           hover:shadow-2xl transition-all duration-300 group overflow-hidden"
+                className="
+                  group relative bg-white rounded-2xl
+                  border border-slate-200
+                  shadow-sm hover:shadow-xl
+                  transition-all duration-300
+                  overflow-hidden hover:-translate-y-1
+                "
               >
-                {/* Top Accent */}
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 via-yellow-400 to-blue-800" />
 
-                <div className="p-6 flex flex-col h-full">
-                  <h3 className="text-xl font-bold text-blue-900 group-hover:text-blue-700 transition">
+                {/* top accent */}
+                <div className="h-1 bg-gradient-to-r from-indigo-700 via-blue-600 to-yellow-400" />
+
+                
+                <div className="p-5 sm:p-6 flex flex-col h-full">
+
+                  {/* title */}
+                  <h3 className="
+                    text-lg sm:text-xl font-bold
+                    text-blue-950
+                    group-hover:text-blue-700
+                    transition
+                  ">
                     {session.title}
                   </h3>
 
-                  {/* Description (handles long text nicely) */}
-                  <p className="text-gray-700 mt-3 leading-relaxed line-clamp-4">
+
+                  {/* description */}
+                  <p className="
+                    mt-3 text-sm sm:text-base
+                    text-slate-600
+                    leading-relaxed
+                    line-clamp-4
+                  ">
                     {session.description}
                   </p>
 
-                  {/* Footer */}
-                  <div className="flex items-center justify-between mt-auto pt-6">
-                    <span className="text-sm font-medium text-black/70">
+
+                  {/* footer */}
+                  <div className="mt-auto pt-6 flex items-center justify-between">
+
+                    <span className="text-sm text-slate-500">
                       Session Year
                     </span>
 
-                    <span className="inline-block bg-yellow-100 text-yellow-800 text-sm font-semibold px-3 py-1 rounded-full">
+                    <span className="
+                      bg-yellow-100
+                      text-yellow-800
+                      text-sm font-semibold
+                      px-3 py-1
+                      rounded-full
+                    ">
                       {dayjs(session.sessionYear).format("YYYY")}
                     </span>
+
                   </div>
+
                 </div>
 
-                {/* Hover Overlay */}
-                <div className="absolute inset-0 bg-blue-600/5 opacity-0 group-hover:opacity-100 transition" />
+
+                {/* subtle hover overlay */}
+                <div className="
+                  absolute inset-0
+                  bg-blue-600/5
+                  opacity-0 group-hover:opacity-100
+                  transition
+                  pointer-events-none
+                " />
+
               </div>
             ))}
+
           </div>
         )}
+
       </div>
+
     </section>
   );
 };
